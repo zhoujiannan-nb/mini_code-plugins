@@ -7,8 +7,8 @@
   "license": "MIT",
   "entry": "index.html",
   "preview": "preview.svg",
-  "description": "复刻 dsh-startup-screen 的电影感开机序列:黑幕芯片标识 -> 过曝洗白 -> 五步接入(英文女声真声播报 + 底噪 + 咔哒音效)-> 色散故障揭幕。品牌已换成 Mini Code,播报是原片真声素材(不是 TTS)。约 18 秒,嫌长调速度,不想听勾静默。",
-  "durationMs": 18500,
+  "description": "复刻 dsh-startup-screen 的电影感开机序列:黑幕芯片标识 -> 过曝洗白 -> 五步接入(英文女声真声播报 + 底噪 + 咔哒音效)-> 色散故障揭幕。品牌已换成 Mini Code,播报是原片真声素材(不是 TTS),终幕只念一声 Welcome。约 17.8 秒,嫌长调速度,不想听勾静默。",
+  "durationMs": 17800,
   "maxMs": 40000,
   "colors": [
     "light",

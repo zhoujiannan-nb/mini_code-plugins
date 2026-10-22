@@ -92,11 +92,15 @@ AUDIO_IMPL = """    /* mini_code 补丁:素材改用 <audio> 元素播放(见文
     /* mini_code 补丁:每条真声素材的头尾死空气(拿 Web Audio 逐 40ms 窗量出来的,
        阈值 -38dBFS,见插件仓库 README「音频素材」)。跳过死空气既省时间也更紧凑,
        没在表里的文件照原样播。数值来源:line-N.mp3 的语音起止 =
-       1:480~1960  2:0~1360  3:0~1320  4:0~1080  5:0~2720  6:1000~3480 */
+       1:480~1960  2:0~1360  3:0~1320  4:0~1080  5:0~2720  6:1000~3480
+       line-6 另有一处**内容裁剪**:原句是「Welcome to DeepSeek Harness」,按 20ms 窗
+       量出音节边界 [1000~1220][1240~1600] = "Wel" "come",随后 800ms 停顿才是后半句,
+       所以在 1700ms 处收 —— 只留一声 "Welcome",既对上画面(屏幕上写的就是
+       WELCOME TO / MINI CODE),也把上游那句别人家的品牌名从声音里去掉。 */
     var TRIMS = {
       'line-1': [400, 2120],
       'line-2': [0, 1520],
-      'line-6': [920, 3640]
+      'line-6': [920, 1700]
     }
 
     function playAssetAndWait(name, gain) {
@@ -293,7 +297,9 @@ def js_patches(src):
 
     # ── 配置默认值:品牌换 Mini Code、跳过按钮交还给宿主 ──────────────────
     for label, old, new in [
-        ("identity", "    identity: 'JOYCE MOORE',", "    identity: 'OPERATOR',"),
+        # 终幕那句「欢迎 X 访问」里的 X。宿主配置里的「身份名」会通过 name= 覆盖它,
+        # 这里只是没传名字时的兜底。
+        ("identity", "    identity: 'JOYCE MOORE',", "    identity: '\u54c8\u57fa\u7c73\u6307\u6325\u5b98',"),
         ("brand1", "    brand1: 'DEEPSEEK',", "    brand1: 'MINI CODE',"),
         ("brand2", "    brand2: 'SYNTHESIZE INTELLIGENCE',", "    brand2: 'LOCAL AGENT WORKBENCH',"),
         ("brand3a", "    brand3a: 'HARNESS',", "    brand3a: 'AGENT',"),
@@ -388,8 +394,8 @@ THEME_JSON = {
     "license": "MIT",
     "entry": "index.html",
     "preview": "preview.svg",
-    "description": "复刻 dsh-startup-screen 的电影感开机序列:黑幕芯片标识 -> 过曝洗白 -> 五步接入(英文女声真声播报 + 底噪 + 咔哒音效)-> 色散故障揭幕。品牌已换成 Mini Code,播报是原片真声素材(不是 TTS)。约 18 秒,嫌长调速度,不想听勾静默。",
-    "durationMs": 18500,
+    "description": "复刻 dsh-startup-screen 的电影感开机序列:黑幕芯片标识 -> 过曝洗白 -> 五步接入(英文女声真声播报 + 底噪 + 咔哒音效)-> 色散故障揭幕。品牌已换成 Mini Code,播报是原片真声素材(不是 TTS),终幕只念一声 Welcome。约 17.8 秒,嫌长调速度,不想听勾静默。",
+    "durationMs": 17800,
     "maxMs": 40000,
     "colors": ["light", "dark"],
     "interactive": False,

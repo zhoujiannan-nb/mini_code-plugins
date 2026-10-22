@@ -11,11 +11,11 @@
         "author": "zhoujiannan-nb",
         "version": "1.0.0",
         "license": "MIT",
-        "description": "复刻 dsh-startup-screen 的电影感开机序列:黑幕芯片标识 -> 过曝洗白 -> 五步接入(英文女声真声播报 + 底噪 + 咔哒音效)-> 色散故障揭幕。品牌已换成 Mini Code,播报是原片真声素材(不是 TTS)。约 18 秒,嫌长调速度,不想听勾静默。",
+        "description": "复刻 dsh-startup-screen 的电影感开机序列:黑幕芯片标识 -> 过曝洗白 -> 五步接入(英文女声真声播报 + 底噪 + 咔哒音效)-> 色散故障揭幕。品牌已换成 Mini Code,播报是原片真声素材(不是 TTS),终幕只念一声 Welcome。约 17.8 秒,嫌长调速度,不想听勾静默。",
         "path": "boot-anim/mc-access",
         "entry": "index.html",
         "preview": "preview.svg",
-        "durationMs": 18500,
+        "durationMs": 17800,
         "maxMs": 40000,
         "colors": [
           "light",
@@ -51,8 +51,8 @@
           },
           {
             "path": "boot-anim/mc-access/boot.js",
-            "size": 63574,
-            "sha256": "a14096cc02c9f69975238e30f6074dc06f619b09c1929bec1239601115066d52"
+            "size": 63974,
+            "sha256": "ddc0ba76969336d3bd7d773d4a229acd4b784653d2df64d34a8368be8d60bae6"
           },
           {
             "path": "boot-anim/mc-access/index.html",
@@ -106,8 +106,8 @@
           },
           {
             "path": "boot-anim/mc-access/theme.json",
-            "size": 1066,
-            "sha256": "adf081ab143347bf3248a98ff83c7a8cc5324c5953b45c61380e82e4c9a49265"
+            "size": 1095,
+            "sha256": "052d397503ba569150d7a1cd3672d9e7c6fc48be50145e89533196c360cc496a"
           }
         ]
       },

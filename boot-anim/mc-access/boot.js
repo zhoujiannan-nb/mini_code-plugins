@@ -113,7 +113,7 @@
     sfx: 'audio',               // audio=真素材（用户音频里抠的音效）/ synth=现场合成
     voiceSource: 'asset',       // asset=优先用真声素材 / tts=全部 TTS 合成
     voiceLead: 240,             // 提示音之后留一小段空白再开口
-    identity: 'OPERATOR',    // ← 设置页可改的"身份名称"
+    identity: '哈基米指挥官',    // ← 设置页可改的"身份名称"
     identityId: '0087',
     accessLevel: '3',
     brand1: 'MINI CODE',
@@ -802,11 +802,15 @@
     /* mini_code 补丁:每条真声素材的头尾死空气(拿 Web Audio 逐 40ms 窗量出来的,
        阈值 -38dBFS,见插件仓库 README「音频素材」)。跳过死空气既省时间也更紧凑,
        没在表里的文件照原样播。数值来源:line-N.mp3 的语音起止 =
-       1:480~1960  2:0~1360  3:0~1320  4:0~1080  5:0~2720  6:1000~3480 */
+       1:480~1960  2:0~1360  3:0~1320  4:0~1080  5:0~2720  6:1000~3480
+       line-6 另有一处**内容裁剪**:原句是「Welcome to DeepSeek Harness」,按 20ms 窗
+       量出音节边界 [1000~1220][1240~1600] = "Wel" "come",随后 800ms 停顿才是后半句,
+       所以在 1700ms 处收 —— 只留一声 "Welcome",既对上画面(屏幕上写的就是
+       WELCOME TO / MINI CODE),也把上游那句别人家的品牌名从声音里去掉。 */
     var TRIMS = {
       'line-1': [400, 2120],
       'line-2': [0, 1520],
-      'line-6': [920, 3640]
+      'line-6': [920, 1700]
     }
 
     function playAssetAndWait(name, gain) {
