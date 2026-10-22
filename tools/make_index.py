@@ -51,6 +51,16 @@ def load(kind, tid):
         return json.load(f), d, p
 
 
+def _flat_files(data):
+    """index.json -> {文件路径: sha256},给 --check 做比对用。"""
+    m = {}
+    for items in (data.get("kinds") or {}).values():
+        for it in items:
+            for f in it.get("files", []):
+                m[f["path"]] = f["sha256"]
+    return m
+
+
 def main():
     problems, out = [], {}
     for kind in KINDS:
@@ -116,7 +126,27 @@ def main():
         for x in problems:
             print(u"[FAIL] " + x)
         return 1
-    with io.open(os.path.join(ROOT, "index.json"), "w", encoding="utf-8", newline="\n") as f:
+    target = os.path.join(ROOT, "index.json")
+
+    if "--check" in sys.argv:
+        # 只比对不写盘:改过主题文件却忘了重新生成 index.json 时,这里就会红。
+        # (宿主安装是按 index.json 里的 sha256 校验的,索引过期 = 装不上。)
+        try:
+            cur = json.loads(io.open(target, encoding="utf-8").read())
+        except Exception as e:
+            print(u"[FAIL] 读不到 index.json: %s" % e)
+            return 1
+        old, new = _flat_files(cur), _flat_files(data)
+        bad = sorted(p for p in set(old) | set(new) if old.get(p) != new.get(p))
+        if bad:
+            for p in bad:
+                print(u"[FAIL] index.json 与主题文件不一致: %s" % p)
+            print(u"       跑一次 python tools/make_index.py 再提交。")
+            return 1
+        print(u"[OK] index.json 与主题文件一致(%d 个文件)" % len(new))
+        return 0
+
+    with io.open(target, "w", encoding="utf-8", newline="\n") as f:
         f.write(json.dumps(data, ensure_ascii=False, indent=2) + "\n")
     total = sum(len(v) for v in out.values())
     print(u"[OK] index.json 已生成: %d 类 %d 个主题" % (len(out), total))
