@@ -1,12 +1,15 @@
 # -*- coding: utf-8 -*-
-"""重新生成技术档案主题的语音/音效素材(全部离线,不联网)。
+"""重新生成技术档案主题的音效素材(离线,不联网)。
 
-  python tools/gen_audio.py            # 生成到 boot-anim/mc-tech-archive/
-  python tools/gen_audio.py --voice Huihui
+  python tools/gen_audio.py            # 只生成 sfx-flash.wav(主题现在只用这一个)
+  python tools/gen_audio.py --lines    # 顺带重做两句 TTS 人声(1.2.0 的旧做法,已废弃)
 
-语音用 Windows 自带 TTS(System.Speech,zh-CN 的 Microsoft Huihui),音效是纯
-python 合成的正弦 + 噪声包络。素材是随仓库分发的,正常情况不用重跑;想换台词
-改 LINES 再跑一次即可(主题按文件名读取)。
+音效是纯 python 合成的正弦 + 噪声包络。素材随仓库分发,正常情况不用重跑。
+
+1.2.0 曾给技术档案配过两句 Windows 自带 TTS(Microsoft Huihui)中文人声,**被否掉了**
+—— 系统 TTS 做不出电影感的人声,所以 1.2.1 起主题里只留音效。要真声播报请用
+「接入序列」(`boot-anim/mc-access/`,素材来自 dsh-startup-screen,移植脚本
+`tools/port_access.py`)。TTS 那条路径保留在 `--lines` 后面,想复现"有多难听"就跑它。
 """
 import argparse
 import math
@@ -111,17 +114,20 @@ def gen_sfx(path, secs=0.85, rate=22050):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--voice", default="Microsoft Huihui Desktop", help="TTS 音色,空串=系统默认")
+    ap.add_argument("--lines", action="store_true",
+                    help="重做两句 TTS 人声(已废弃的做法,主题 1.2.1 起不再使用)")
     args = ap.parse_args()
     if not os.path.isdir(THEME):
         raise SystemExit("[FAIL] 找不到主题目录 " + THEME)
-    print("生成语音(TTS = %s):" % (args.voice or "默认"))
-    for name, text, rate in LINES:
-        src = tts(text, None, rate, args.voice)
-        rate_, pcm = read_wav(src)
-        pcm = trim(pcm, head=0.12, tail=0.20)
-        dst = os.path.join(THEME, name)
-        write_wav(dst, rate_, pcm)
-        print("  %-18s %5.2fs  %6d B  %s" % (name, len(pcm) / 2.0 / rate_, os.path.getsize(dst), text))
+    if args.lines:                                   # 默认不做:TTS 人声已被否掉
+        print("生成语音(TTS = %s):" % (args.voice or "默认"))
+        for name, text, rate in LINES:
+            src = tts(text, None, rate, args.voice)
+            rate_, pcm = read_wav(src)
+            pcm = trim(pcm, head=0.12, tail=0.20)
+            dst = os.path.join(THEME, name)
+            write_wav(dst, rate_, pcm)
+            print("  %-18s %5.2fs  %6d B  %s" % (name, len(pcm) / 2.0 / rate_, os.path.getsize(dst), text))
     d = gen_sfx(os.path.join(THEME, "sfx-flash.wav"))
     print("  %-18s %5.2fs  %6d B  (合成音效)" % ("sfx-flash.wav", d, os.path.getsize(os.path.join(THEME, "sfx-flash.wav"))))
     print("\n完成。记得跑 python tools/make_index.py 更新索引 + --check。")

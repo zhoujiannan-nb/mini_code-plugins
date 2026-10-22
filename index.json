@@ -5,6 +5,113 @@
   "kinds": {
     "boot-anim": [
       {
+        "id": "mc-access",
+        "name": "接入序列",
+        "nameEn": "Access Sequence",
+        "author": "zhoujiannan-nb",
+        "version": "1.0.0",
+        "license": "MIT",
+        "description": "复刻 dsh-startup-screen 的电影感开机序列:黑幕芯片标识 -> 过曝洗白 -> 五步接入(英文女声真声播报 + 底噪 + 咔哒音效)-> 色散故障揭幕。品牌已换成 Mini Code,播报是原片真声素材(不是 TTS)。约 18 秒,嫌长调速度,不想听勾静默。",
+        "path": "boot-anim/mc-access",
+        "entry": "index.html",
+        "preview": "preview.svg",
+        "durationMs": 18500,
+        "maxMs": 40000,
+        "colors": [
+          "light",
+          "dark"
+        ],
+        "interactive": false,
+        "minViewport": 480,
+        "tags": [
+          "开机",
+          "电影感",
+          "语音",
+          "音效",
+          "复刻"
+        ],
+        "options": {
+          "speed": 1,
+          "theme": "light",
+          "accent": "#ff7500",
+          "brand": "MINI CODE",
+          "slogan": "LOCAL AGENT WORKBENCH",
+          "orgzh": "迷你代码",
+          "org": "MINI CODE",
+          "orgsub": "MINI CODE AGENT",
+          "welcome": "MINI CODE",
+          "footer": "POWERED BY MINI CODE",
+          "require_interaction": 0
+        },
+        "files": [
+          {
+            "path": "boot-anim/mc-access/boot.css",
+            "size": 34394,
+            "sha256": "26dea74ab8f8957703a6ef9011315915a0bce2bac0ba8ae2d432c3a9e45960ba"
+          },
+          {
+            "path": "boot-anim/mc-access/boot.js",
+            "size": 63574,
+            "sha256": "a14096cc02c9f69975238e30f6074dc06f619b09c1929bec1239601115066d52"
+          },
+          {
+            "path": "boot-anim/mc-access/index.html",
+            "size": 582,
+            "sha256": "e369afc53478b1a0981e2b1bed8fac89f4ca52547492f3e65c789afac0019952"
+          },
+          {
+            "path": "boot-anim/mc-access/line-1.mp3",
+            "size": 234924,
+            "sha256": "d1f5e1b97597a87fd9233b43bc53ea9b29cc84bdf167336fc222bb04b8f36863"
+          },
+          {
+            "path": "boot-anim/mc-access/line-2.mp3",
+            "size": 208044,
+            "sha256": "1e633ecc55ffc8d3f0557173565e67db55aa6af6663266ab917c994ae7db9c28"
+          },
+          {
+            "path": "boot-anim/mc-access/line-3.mp3",
+            "size": 92204,
+            "sha256": "7e2ad8c521be7970a446ed596d98faf6c23de97042d6cc981e160df7bd84738b"
+          },
+          {
+            "path": "boot-anim/mc-access/line-4.mp3",
+            "size": 69804,
+            "sha256": "63982f97e896cf166f9812bce64790c5b1db12ccfd352c8f7e46874257f39a8d"
+          },
+          {
+            "path": "boot-anim/mc-access/line-5.mp3",
+            "size": 176044,
+            "sha256": "b8d28aee8cdd3593df655df3d5d558cee267815179f2e69345841fa619f71a35"
+          },
+          {
+            "path": "boot-anim/mc-access/line-6.mp3",
+            "size": 275400,
+            "sha256": "9f2017a056f53692225e732d252e4e6e5a27d90be0afe966b97784b27427cfc5"
+          },
+          {
+            "path": "boot-anim/mc-access/preview.svg",
+            "size": 756,
+            "sha256": "a2caa04c0c2ca57ba74be2ab2f2dd59ceab12925e2830fb1c8593a74481113ea"
+          },
+          {
+            "path": "boot-anim/mc-access/sfx-tick.mp3",
+            "size": 2133,
+            "sha256": "4b808e21d8f4751d3ba20bfe58fc754b832694b48bf62b408b86a7a4a97e5804"
+          },
+          {
+            "path": "boot-anim/mc-access/sfx-ticks-run.mp3",
+            "size": 10493,
+            "sha256": "6938b409be952fb60b1a56d2162effa2f631254d05a25fd69be76233a7f8dd9f"
+          },
+          {
+            "path": "boot-anim/mc-access/theme.json",
+            "size": 1066,
+            "sha256": "adf081ab143347bf3248a98ff83c7a8cc5324c5953b45c61380e82e4c9a49265"
+          }
+        ]
+      },
+      {
         "id": "mc-minimal",
         "name": "极简终端",
         "nameEn": "Minimal Terminal",
@@ -56,9 +163,9 @@
         "name": "技术档案",
         "nameEn": "Tech Archive",
         "author": "zhoujiannan-nb",
-        "version": "1.2.0",
+        "version": "1.2.1",
         "license": "MIT",
-        "description": "睁眼开场(瞳孔是终端光标)+ 语音「你好,我是 Mini Code」+ 品牌字距展开 + 「欢迎来到人类联盟」→ 环形准星 → 过曝洗白(带音效)→ 三步文字序列 → 色散故障揭幕。约 9.4 秒,嫌长调速度。",
+        "description": "睁眼开场(瞳孔是终端光标)+ 品牌字距展开 + 「欢迎来到人类联盟」→ 环形准星 → 过曝洗白(带音效)→ 三步文字序列 → 色散故障揭幕。约 9.4 秒,只有音效没有人声;要带真声播报的选「接入序列」。",
         "path": "boot-anim/mc-tech-archive",
         "entry": "index.html",
         "preview": "preview.svg",
@@ -74,7 +181,7 @@
           "科幻",
           "终端",
           "品牌",
-          "语音"
+          "音效"
         ],
         "options": {
           "speed": 1,
@@ -88,8 +195,8 @@
         "files": [
           {
             "path": "boot-anim/mc-tech-archive/index.html",
-            "size": 22937,
-            "sha256": "e0227c60290f973fcc7ecb8db6cfcee8deb420a1b8394b3f52a89d67e81b894d"
+            "size": 22739,
+            "sha256": "c09fc1d824d2c741889fb5c4755c3be19cdec82b3af295152d1192d87e3bada0"
           },
           {
             "path": "boot-anim/mc-tech-archive/preview.svg",
@@ -103,18 +210,8 @@
           },
           {
             "path": "boot-anim/mc-tech-archive/theme.json",
-            "size": 825,
-            "sha256": "5291175f2d1cf7c9207634b83686fdb072a31dd8c841a1e427e3dab401a9f8a1"
-          },
-          {
-            "path": "boot-anim/mc-tech-archive/voice-hello.wav",
-            "size": 83108,
-            "sha256": "2143c758cf7f12e59042196b157309bf28a1bfea692f8fc6bca97106dd12220f"
-          },
-          {
-            "path": "boot-anim/mc-tech-archive/voice-welcome.wav",
-            "size": 78332,
-            "sha256": "8430bb9f7ff330d35a3880858c48ce6aac07735c2ee8e4a17e38420ef6cffbc3"
+            "size": 840,
+            "sha256": "f8dc7f3cc129d808efa482d1c062f10f55a1ffc0e12d695b152dfd8829ba8919"
           }
         ]
       }

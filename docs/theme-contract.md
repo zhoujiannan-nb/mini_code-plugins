@@ -70,11 +70,15 @@ parent.postMessage({ mc: "boot-anim", type: "...", id: "<主题 id>", ... }, "*"
 
 ## 语音与音效
 
-主题可以带声音（技术档案 v1.2 就有两句台词 + 一个音效）：
+主题可以带声音（接入序列有 6 句真声播报 + 2 种咔哒音效，技术档案有 1 个洗白音效）：
 
 - 文件**平铺在主题目录里**（不允许子目录），后缀 `.mp3` / `.ogg` / `.wav`；单个 ≤8 MB、
   整个主题 ≤32 MB。主题目录里多出来的文件 `tools/make_index.py` 会自动进索引并算 sha256。
-- CSP 已经放行 `media-src 'self' data: blob:`，所以 `new Audio("voice-hello.wav")` 直接可用。
+- CSP 已经放行 `media-src 'self' data: blob:`，所以 `new Audio("line-1.mp3")` 直接可用。
+- **但只能用标签，不能用 `fetch`**：主题这份文件的 CSP 是 `connect-src 'none'`，
+  `fetch` / `XMLHttpRequest` / `WebSocket` 一律被拦（本地模拟器 `preview/` 没有这条 CSP，
+  所以那边能跑通不代表真宿主能跑通）。要知道音频多长，用 `<audio preload="metadata">`
+  的 `loadedmetadata` + `duration`，别指望 `decodeAudioData`。
 - **自动播放是真门槛**：开机时用户一次都没点过。实测（headless Chromium）沙箱 iframe、
   `allow="autoplay"`、甚至顶层文档都会被策略拦掉（`NotAllowedError`），只有加
   `--autoplay-policy=no-user-gesture-required` 才出声。所以：
@@ -84,9 +88,12 @@ parent.postMessage({ mc: "boot-anim", type: "...", id: "<主题 id>", ... }, "*"
   - 用普通浏览器打开 Web 版时，首次可能仍被策略拦掉 —— 所以 **每个 `play()` 都必须
     `catch`**，没声音也要把动画演完。
 - 宿主「配置 → 开机动画 → 静默」会以 `mute=1` 传进来，主题必须认这个参数（最好的做法
-  是干脆不加载音频文件）。
-- 素材用 `python tools/gen_audio.py` 离线重新生成（Windows TTS，改台词就改脚本里的
-  `LINES`）；主题按文件名读取，换文件不用改代码。
+  是干脆不加载音频文件；接入序列实测勾静默后一个音频字节都不请求）。
+- 别拿系统 TTS 当人声：Windows 自带中文音色（Microsoft Huihui 那类）塑料味很重，
+  技术档案 1.2.0 试过，被否掉了。要么用真素材，要么只上音效。
+- 素材"说到哪儿结束"要量：用 Web Audio 逐 40 ms 窗取 RMS（阈值 -38 dBFS）找语音起止，
+  尾巴上的死空气在主题里削掉，再决定这一步停多久，否则每一步都会多等 1 ~ 2 秒
+  （接入序列整段因此从 23.4s 压到 18.5s）。`tools/port_access.py` 里有现成实现。
 
 ## 写主题的规则
 

@@ -1,0 +1,39 @@
+{
+  "id": "mc-access",
+  "name": "接入序列",
+  "nameEn": "Access Sequence",
+  "author": "zhoujiannan-nb",
+  "version": "1.0.0",
+  "license": "MIT",
+  "entry": "index.html",
+  "preview": "preview.svg",
+  "description": "复刻 dsh-startup-screen 的电影感开机序列:黑幕芯片标识 -> 过曝洗白 -> 五步接入(英文女声真声播报 + 底噪 + 咔哒音效)-> 色散故障揭幕。品牌已换成 Mini Code,播报是原片真声素材(不是 TTS)。约 18 秒,嫌长调速度,不想听勾静默。",
+  "durationMs": 18500,
+  "maxMs": 40000,
+  "colors": [
+    "light",
+    "dark"
+  ],
+  "interactive": false,
+  "minViewport": 480,
+  "tags": [
+    "开机",
+    "电影感",
+    "语音",
+    "音效",
+    "复刻"
+  ],
+  "options": {
+    "speed": 1,
+    "theme": "light",
+    "accent": "#ff7500",
+    "brand": "MINI CODE",
+    "slogan": "LOCAL AGENT WORKBENCH",
+    "orgzh": "迷你代码",
+    "org": "MINI CODE",
+    "orgsub": "MINI CODE AGENT",
+    "welcome": "MINI CODE",
+    "footer": "POWERED BY MINI CODE",
+    "require_interaction": 0
+  }
+}
