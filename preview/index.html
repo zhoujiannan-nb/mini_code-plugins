@@ -102,7 +102,9 @@
             "&name=" + encodeURIComponent(document.getElementById("name").value || "") +
             "&interactive=" + (document.getElementById("inter").checked ? 1 : 0);
     frame = document.createElement("iframe");
-    frame.setAttribute("sandbox", "allow-scripts");     // 和真宿主一致:不给 same-origin
+    frame.setAttribute("sandbox", "allow-scripts");
+  // 和真宿主一致:带语音的主题要有 autoplay 才可能在预览里出声
+  frame.setAttribute("allow", "autoplay");     // 和真宿主一致:不给 same-origin
     frame.src = "../" + cur.path + "/" + cur.entry + q;
     stage.appendChild(frame);
     t0 = Date.now();

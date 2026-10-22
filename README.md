@@ -11,8 +11,8 @@ mini_code 的「配置 → 开机动画 → 在线获取」直接读本仓库根
 
 | 主题 | 时长 | 一句话 |
 |---|---|---|
-| [技术档案](boot-anim/mc-tech-archive/) `mc-tech-archive` | 8.6s | 睁眼开场 + 品牌字距展开 → 环形准星 → 过曝洗白 → 三步文字序列 → 色散故障揭幕 |
-| [极简终端](boot-anim/mc-minimal/) `mc-minimal` | 2.6s | 四行终端打字 + 扫描线 + `ready.`，嫌长就用这个 |
+| [技术档案](boot-anim/mc-tech-archive/) `mc-tech-archive` | 9.4s | 睁眼开场 + 语音「你好,我是 Mini Code」+ 品牌字距展开 → 环形准星 → 过曝洗白(带音效)→ 三步文字序列 → 色散故障揭幕 |
+| [极简终端](boot-anim/mc-minimal/) `mc-minimal` | 2.6s | 四行终端打字 + 扫描线 + `ready.`，嫌长就用这个（无声） |
 
 ## 本地跑起来看
 
@@ -37,6 +37,21 @@ python -m http.server 8700
 3. 提 PR。
 
 纯前端、无构建步骤、无依赖 —— 会写 HTML/CSS 就能写主题。
+
+## 语音/音效素材
+
+`boot-anim/mc-tech-archive/` 里那两句台词（`voice-hello.wav` / `voice-welcome.wav`）和
+音效 `sfx-flash.wav` 是用 `tools/gen_audio.py` 离线合成的（Windows 自带中文 TTS
+Microsoft Huihui + 纯 python 合成的正弦/噪声音效），不联网、可复现：
+
+```bash
+python tools/gen_audio.py            # 重新生成到主题目录
+python tools/gen_audio.py --voice "" # 用系统默认音色
+```
+
+换台词改脚本里的 `LINES`；主题按文件名读取，换素材不用改代码。
+声音能不能放出来见 [docs/theme-contract.md](docs/theme-contract.md) 的「语音与音效」一节
+（自动播放策略是真正的门槛，桌面版已经放宽）。
 
 ## 目录约定
 

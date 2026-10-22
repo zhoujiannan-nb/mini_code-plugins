@@ -9,7 +9,7 @@
         "name": "极简终端",
         "nameEn": "Minimal Terminal",
         "author": "zhoujiannan-nb",
-        "version": "1.0.0",
+        "version": "1.0.1",
         "license": "MIT",
         "description": "四行终端打字 + 扫描线 + ready. 光标,2.6 秒收工。给嫌动画太长的人用的短路选项。",
         "path": "boot-anim/mc-minimal",
@@ -36,8 +36,8 @@
         "files": [
           {
             "path": "boot-anim/mc-minimal/index.html",
-            "size": 3961,
-            "sha256": "5a16bbd36d77d3b021f8a7c3070aec9ec452fd2a64b9c8e6fa1497d8f5d7d293"
+            "size": 3777,
+            "sha256": "1de42f3f1d988fb9e64a791ca4c8f8942ee362842177a6d6a4fecb409b3aa4ec"
           },
           {
             "path": "boot-anim/mc-minimal/preview.svg",
@@ -47,7 +47,7 @@
           {
             "path": "boot-anim/mc-minimal/theme.json",
             "size": 568,
-            "sha256": "5e2d5344bd20a637379c33e95684115eaafcc91d013f278e8f99768c8efe1a6f"
+            "sha256": "cf215b6e22072d7444972b03ae0970a7454e499a13ae7ab97b0fe29c251e937f"
           }
         ]
       },
@@ -56,14 +56,14 @@
         "name": "技术档案",
         "nameEn": "Tech Archive",
         "author": "zhoujiannan-nb",
-        "version": "1.1.0",
+        "version": "1.2.0",
         "license": "MIT",
-        "description": "睁眼开场(瞳孔是终端光标)+ 品牌字距展开 + 「欢迎来到人类联盟」→ 环形准星 → 过曝洗白 → 档案底板 → 三步文字序列 → 色散故障揭幕。约 8.6 秒。",
+        "description": "睁眼开场(瞳孔是终端光标)+ 语音「你好,我是 Mini Code」+ 品牌字距展开 + 「欢迎来到人类联盟」→ 环形准星 → 过曝洗白(带音效)→ 三步文字序列 → 色散故障揭幕。约 9.4 秒,嫌长调速度。",
         "path": "boot-anim/mc-tech-archive",
         "entry": "index.html",
         "preview": "preview.svg",
-        "durationMs": 8600,
-        "maxMs": 17000,
+        "durationMs": 9400,
+        "maxMs": 20000,
         "colors": [
           "dark"
         ],
@@ -73,7 +73,8 @@
           "开机",
           "科幻",
           "终端",
-          "品牌"
+          "品牌",
+          "语音"
         ],
         "options": {
           "speed": 1,
@@ -81,13 +82,14 @@
           "interactive": 0,
           "accent": "#5b8cff",
           "brand": "Mini Code",
-          "sub": "欢迎来到人类联盟"
+          "sub": "欢迎来到人类联盟",
+          "mute": 0
         },
         "files": [
           {
             "path": "boot-anim/mc-tech-archive/index.html",
-            "size": 21294,
-            "sha256": "c5732d6d2431b29fe7bcea40f6732e7f1a306c8c91fbebd82b20d0aaf4e78b15"
+            "size": 22937,
+            "sha256": "e0227c60290f973fcc7ecb8db6cfcee8deb420a1b8394b3f52a89d67e81b894d"
           },
           {
             "path": "boot-anim/mc-tech-archive/preview.svg",
@@ -95,9 +97,24 @@
             "sha256": "33ed9ccbd9d5a00cc796b00c05d9c7b06dcd99f87263923dd70418057e55564a"
           },
           {
+            "path": "boot-anim/mc-tech-archive/sfx-flash.wav",
+            "size": 37528,
+            "sha256": "752ac266f6564f03e9fd7d070070b09981f7a99a80eeb367139cedb879ebee81"
+          },
+          {
             "path": "boot-anim/mc-tech-archive/theme.json",
-            "size": 754,
-            "sha256": "1b3fccbb3d6d0007a58d7985b36f66761fc8455f1e3287541f390aaf513333a9"
+            "size": 825,
+            "sha256": "5291175f2d1cf7c9207634b83686fdb072a31dd8c841a1e427e3dab401a9f8a1"
+          },
+          {
+            "path": "boot-anim/mc-tech-archive/voice-hello.wav",
+            "size": 83108,
+            "sha256": "2143c758cf7f12e59042196b157309bf28a1bfea692f8fc6bca97106dd12220f"
+          },
+          {
+            "path": "boot-anim/mc-tech-archive/voice-welcome.wav",
+            "size": 78332,
+            "sha256": "8430bb9f7ff330d35a3880858c48ce6aac07735c2ee8e4a17e38420ef6cffbc3"
           }
         ]
       }

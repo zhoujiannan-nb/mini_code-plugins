@@ -39,10 +39,12 @@ boot-anim/mc-tech-archive/
 | `options` | | 默认参数，宿主以 **query string** 传进入口 |
 
 宿主会拼这些 query（主题自行读取、自行兜默认值）：
-`speed`（0.35–3）、`name`（用户身份名，可空）、`interactive`（0/1）、`accent`（主题色）。
-主题自己的参数也走同一套 query（`options` 里的键原样拼上去），例如技术档案的
-`brand`（开场字标文字，默认 `Mini Code`）、`sub`（字标下的小标题，默认 `欢迎来到人类联盟`）。
-新参数记得在 `theme.json` 的 `options` 里给默认值，宿主才会把它带进来。
+`speed`（0.35–3）、`name`（用户身份名，可空）、`interactive`（0/1）、`mute`（0/1，用户勾了「静默」）、
+`accent`（主题色）。主题自己的参数也走同一套 query（`options` 里的键原样拼上去，宿主保留的
+`speed/name/interactive/mute` 以宿主为准），例如技术档案的 `brand`（开场字标，默认 `Mini Code`）、
+`sub`（字标下的小标题，默认 `欢迎来到人类联盟`）。
+`options` 的键必须是短小写单词、值只能是字符串/数字/布尔（最多 16 个、字符串 ≤64 字节），
+否则宿主直接丢掉 —— 它们会出现在注入页面的 JSON 里，不能是任意文本。
 
 ## 与宿主的通讯（只有一个通道）
 
@@ -66,6 +68,26 @@ parent.postMessage({ mc: "boot-anim", type: "...", id: "<主题 id>", ... }, "*"
 （本仓库两个示例都在末尾放了 `setTimeout(finish, maxMs)`）。宿主也有同名的硬超时，
 但别指望它当你的计时器。
 
+## 语音与音效
+
+主题可以带声音（技术档案 v1.2 就有两句台词 + 一个音效）：
+
+- 文件**平铺在主题目录里**（不允许子目录），后缀 `.mp3` / `.ogg` / `.wav`；单个 ≤8 MB、
+  整个主题 ≤32 MB。主题目录里多出来的文件 `tools/make_index.py` 会自动进索引并算 sha256。
+- CSP 已经放行 `media-src 'self' data: blob:`，所以 `new Audio("voice-hello.wav")` 直接可用。
+- **自动播放是真门槛**：开机时用户一次都没点过。实测（headless Chromium）沙箱 iframe、
+  `allow="autoplay"`、甚至顶层文档都会被策略拦掉（`NotAllowedError`），只有加
+  `--autoplay-policy=no-user-gesture-required` 才出声。所以：
+  - 宿主给 iframe 加了 `allow="autoplay"`；
+  - 桌面版 `mini_code.exe` 另外通过 `WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS`
+    传 `--autoplay-policy=no-user-gesture-required`（见 `desktop/windows/windows.go`）；
+  - 用普通浏览器打开 Web 版时，首次可能仍被策略拦掉 —— 所以 **每个 `play()` 都必须
+    `catch`**，没声音也要把动画演完。
+- 宿主「配置 → 开机动画 → 静默」会以 `mute=1` 传进来，主题必须认这个参数（最好的做法
+  是干脆不加载音频文件）。
+- 素材用 `python tools/gen_audio.py` 离线重新生成（Windows TTS，改台词就改脚本里的
+  `LINES`）；主题按文件名读取，换文件不用改代码。
+
 ## 写主题的规则
 
 1. **必须能自己结束**：`done` 一定要发；异常路径也要发。
@@ -80,7 +102,9 @@ parent.postMessage({ mc: "boot-anim", type: "...", id: "<主题 id>", ... }, "*"
 6. 别读写宿主的东西：拿不到，也不该拿。
 7. 时长：2–10 秒是礼貌区间。超过 15 秒请做成 `interactive` 或给足跳过按钮。
 8. 尺寸自适应：用 `vw/vh/%`，别假设 1920×1080；窗口可能只有 900×600。
-9. 别放自动播放的音频：浏览器要求先有用户手势，硬放只会被 console 报错。
+9. **要用声音就做到三点**：能静默（读 `mute=1`）、播放失败也必须演完（每个 `play()`
+   都 `catch`）、素材放主题目录（见下节）。浏览器里首次打开仍可能被自动播放策略拦掉，
+   这不是 bug。
 10. 深色优先：mini_code 默认深色；做浅色适配就把 `colors` 写全。
 
 ## 加一个主题
@@ -95,6 +119,10 @@ python -m http.server 8700      # 另开一个终端
 
 `tools/make_index.py` 会挡住这些常见错：`id` 与目录名不一致、version 不是 `x.y.z`、
 entry 不存在或越界、`maxMs < durationMs`、preview 缺失。**不要手改 `index.json`。**
+
+改完主题文件**一定要重新跑一次 `make_index.py`**：宿主安装是按 `index.json` 里的 sha256
+逐文件校验的，索引一过期装不上（这个坑踩过：先跑脚本、后又改了一行 HTML）。提交前用
+`python tools/make_index.py --check` 自查一遍，不一致会直接退出码 1。
 
 ## 宿主侧行为（供参考，改动请同步这里的文档）
 

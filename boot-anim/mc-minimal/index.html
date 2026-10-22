@@ -29,9 +29,8 @@
   @keyframes bl { 50% { opacity: 0; } }
   .glow { position: absolute; inset: 0; pointer-events: none;
     background: repeating-linear-gradient(180deg, rgba(255, 255, 255, .035) 0 1px, transparent 1px 3px); }
-  .skip { position: absolute; right: 24px; bottom: 24px; background: none; border: 0;
-    color: rgba(126, 226, 168, .5); font: 11px/1 var(--mono); cursor: pointer; }
-  .skip:hover { color: var(--fg); }
+   /* 跳过按钮由宿主提供(右下角 + Esc),主题里不再画一颗 */
+
   .gone { opacity: 0; transition: opacity calc(420ms * var(--k)) ease-out; }
 </style>
 </head>
@@ -39,7 +38,6 @@
 <div class="wrap" id="wrap">
   <div class="box" id="box"></div>
   <div class="glow"></div>
-  <button class="skip" id="skip">esc</button>
 </div>
 <script>
 (function () {
@@ -90,7 +88,7 @@
     if (done) return; done = true;
     send("done", { by: by }); wrap.style.display = "none";
   }
-  document.getElementById("skip").addEventListener("click", function () { finish("skip"); });
+  // 跳过 affordance 在宿主那边(右下角按钮);主题只监听 Esc。
   addEventListener("keydown", function (e) { if (e.key === "Escape") finish("skip"); });
   setTimeout(function () { finish("timeout"); }, 9000);
 })();

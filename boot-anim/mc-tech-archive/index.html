@@ -10,11 +10,15 @@
     · 标识开场(眼睑睁开 + 字距展开 + 扫光)→ 黑幕 → 过曝洗白 → 档案底板 → 分步文字 → 色散故障揭幕
     · 中文主字 + 英文等宽副标题逐字打出(像终端在接收数据)
     · "handoff" 信号:在【开始淡出】那一瞬间就通知宿主可以叠化,而不是等淡完
+    · 语音/音效:voice-hello.wav(睁眼+字标)、voice-welcome.wav(小标题)、
+      sfx-flash.wav(洗白那一下)。素材由 tools/gen_audio.py 离线合成(Windows TTS),
+      换台词改那个脚本重跑即可。宿主 iframe 带 allow="autoplay",但播放仍可能被打断,
+      所以每个 play() 都 catch 掉 —— 没声音也必须能演完。mute=1 直接不出声。
   两条约束(别踩):
     · 跳过 affordance 归宿主(右下角那颗 + Esc)。主题里【不要】再画一颗"跳过 Esc",
       否则画面右下角会出现两层跳过按钮;这里的按钮只在 interactive 模式下当"继续 ▸"用。
     · 自包含:无外部依赖、不联网、不读宿主任何东西(宿主以 sandbox iframe 加载)。
-  可调参数(query):speed / name / interactive / accent / brand / sub / ver
+  可调参数(query):speed / name / interactive / accent / brand / sub / mute / ver
   配色跟 mini_code 本体一致(深色 #111214 / 主色 #5b8cff)。
 -->
 <style>
@@ -279,6 +283,7 @@
   var interactive = q.get("interactive") === "1";
   var brand = (q.get("brand") || "Mini Code").slice(0, 24);
   var sub = (q.get("sub") || "欢迎来到人类联盟").slice(0, 28);
+  var mute = q.get("mute") === "1" || q.get("sound") === "0";   // 宿主「静默」勾选
   var reduced = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
   if (reduced) speed = Math.min(3, speed * 3);          // 系统要求减少动效 → 快进,但仍然走完
   if (q.get("accent")) document.documentElement.style.setProperty("--accent", q.get("accent"));
@@ -289,6 +294,36 @@
       var m = { mc: "boot-anim", type: type, id: ID };
       for (var k in extra) m[k] = extra[k];
       parent.postMessage(m, "*");
+    } catch (e) {}
+  }
+
+  // ---- 语音/音效 ----
+  // 宿主给 iframe 加了 allow="autoplay",但自动播放还是可能被打断(策略、设备、
+  // 用户静音),所以一律 catch:没声音也必须能把动画演完。mute=1 时干脆不加载。
+  var CLIPS = {
+    hello: ["voice-hello.wav", 0.85],
+    welcome: ["voice-welcome.wav", 0.85],
+    flash: ["sfx-flash.wav", 0.5]
+  };
+  var sounds = {};
+  if (!mute) {
+    Object.keys(CLIPS).forEach(function (k) {
+      try {
+        var a = new Audio(CLIPS[k][0]);
+        a.preload = "auto";
+        a.volume = CLIPS[k][1];
+        a.addEventListener("error", function () {});      // 素材缺失也别炸
+        sounds[k] = a;
+      } catch (e) {}
+    });
+  }
+  function cue(k) {
+    var a = sounds[k];
+    if (!a) return;
+    try {
+      a.currentTime = 0;
+      var p = a.play();
+      if (p && p.catch) p.catch(function () {});          // 被策略拦掉就当没声音
     } catch (e) {}
   }
 
@@ -311,7 +346,7 @@
   var clock = document.getElementById("hud-time");
   function tick() { clock.textContent = new Date().toTimeString().slice(0, 8); }
   tick(); var clockT = setInterval(tick, 500);
-  document.getElementById("hud-r").textContent = "ARCHIVE · v" + (q.get("ver") || "1.1");
+  document.getElementById("hud-r").textContent = "ARCHIVE · v" + (q.get("ver") || "1.2");
 
   var STEPS = [
     ["装载本地会话", "LOADING LOCAL SESSIONS"],
@@ -378,22 +413,25 @@
   });
 
   // ---- 时间线(毫秒 @1x)----
-  // 0    第一帧:眼形外框 + 糊着的品牌字已经在画上
-  // 60   眼睑睁开(900ms)→ 瞳孔里是终端光标 → 560ms 后掠过一道高光
-  // 520  品牌字字距展开 + 底下一根线擦出
-  // 1200 小标题「欢迎来到人类联盟」+ 英文小字
-  // 2250 整块标识缩小退场,同时环形准星进场
-  // 3250 过曝洗白 → 档案底板 → 三步序列 → 色散故障揭幕
-  send("ready", { durationMs: 8600, maxMs: 17000, steps: STEPS.length, reduced: reduced });
+  // 0     第一帧:眼形外框 + 糊着的品牌字已经在画上
+  // 60    眼睑睁开(900ms)→ 瞳孔里是终端光标 → 560ms 后掠过一道高光
+  // 300   语音「你好,我是 Mini Code。」(1.9s)
+  // 520   品牌字字距展开 + 底下一根线擦出
+  // 1700  小标题「欢迎来到人类联盟」+ 英文小字,1850 语音跟上
+  // 2850  整块标识缩小退场,同时环形准星进场
+  // 3850  过曝洗白 + 音效 → 档案底板 → 三步文字序列 → 色散故障揭幕
+  send("ready", { durationMs: 9400, maxMs: 20000, steps: STEPS.length, reduced: reduced, audio: !mute });
   at(60, function () { eye.classList.add("open"); });
+  at(300, function () { cue("hello"); });
   at(520, function () { word.classList.add("in"); });
-  at(1200, function () { subEl.classList.add("in"); subEn.classList.add("in"); });
-  at(2250, function () { brandEl.classList.add("out"); mark.classList.add("in"); });
-  at(3250, function () { mark.classList.add("burst"); flash.classList.add("go"); });
-  at(3500, function () { seq.classList.add("on"); mark.classList.add("hidden"); });
-  at(3650, function () { steps.classList.add("on"); next(0); });
+  at(1700, function () { subEl.classList.add("in"); subEn.classList.add("in"); });
+  at(1850, function () { cue("welcome"); });
+  at(2850, function () { brandEl.classList.add("out"); mark.classList.add("in"); });
+  at(3850, function () { mark.classList.add("burst"); flash.classList.add("go"); cue("flash"); });
+  at(4100, function () { seq.classList.add("on"); mark.classList.add("hidden"); });
+  at(4250, function () { steps.classList.add("on"); next(0); });
 
-  setTimeout(function () { finish("timeout"); }, 17000); // 自身兜底:任何异常都不能把人关在黑屏里
+  setTimeout(function () { finish("timeout"); }, 20000); // 自身兜底:任何异常都不能把人关在黑屏里
 })();
 </script>
 </body>

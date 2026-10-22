@@ -3,7 +3,7 @@
   "name": "极简终端",
   "nameEn": "Minimal Terminal",
   "author": "zhoujiannan-nb",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "license": "MIT",
   "entry": "index.html",
   "preview": "preview.svg",

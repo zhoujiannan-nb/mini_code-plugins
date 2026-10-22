@@ -3,23 +3,24 @@
   "name": "技术档案",
   "nameEn": "Tech Archive",
   "author": "zhoujiannan-nb",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "license": "MIT",
   "entry": "index.html",
   "preview": "preview.svg",
-  "description": "睁眼开场(瞳孔是终端光标)+ 品牌字距展开 + 「欢迎来到人类联盟」→ 环形准星 → 过曝洗白 → 档案底板 → 三步文字序列 → 色散故障揭幕。约 8.6 秒。",
-  "durationMs": 8600,
-  "maxMs": 17000,
+  "description": "睁眼开场(瞳孔是终端光标)+ 语音「你好,我是 Mini Code」+ 品牌字距展开 + 「欢迎来到人类联盟」→ 环形准星 → 过曝洗白(带音效)→ 三步文字序列 → 色散故障揭幕。约 9.4 秒,嫌长调速度。",
+  "durationMs": 9400,
+  "maxMs": 20000,
   "colors": ["dark"],
   "interactive": false,
   "minViewport": 480,
-  "tags": ["开机", "科幻", "终端", "品牌"],
+  "tags": ["开机", "科幻", "终端", "品牌", "语音"],
   "options": {
     "speed": 1,
     "name": "",
     "interactive": 0,
     "accent": "#5b8cff",
     "brand": "Mini Code",
-    "sub": "欢迎来到人类联盟"
+    "sub": "欢迎来到人类联盟",
+    "mute": 0
   }
 }
