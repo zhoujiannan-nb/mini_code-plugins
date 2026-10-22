@@ -56,14 +56,14 @@
         "name": "技术档案",
         "nameEn": "Tech Archive",
         "author": "zhoujiannan-nb",
-        "version": "1.0.0",
+        "version": "1.1.0",
         "license": "MIT",
-        "description": "黑幕准星 → 过曝洗白 → 档案底板 → 三步文字序列(中文主字 + 英文逐字副标题)→ 色散故障揭幕。约 7.3 秒。",
+        "description": "睁眼开场(瞳孔是终端光标)+ 品牌字距展开 + 「欢迎来到人类联盟」→ 环形准星 → 过曝洗白 → 档案底板 → 三步文字序列 → 色散故障揭幕。约 8.6 秒。",
         "path": "boot-anim/mc-tech-archive",
         "entry": "index.html",
         "preview": "preview.svg",
-        "durationMs": 7300,
-        "maxMs": 16000,
+        "durationMs": 8600,
+        "maxMs": 17000,
         "colors": [
           "dark"
         ],
@@ -72,19 +72,22 @@
         "tags": [
           "开机",
           "科幻",
-          "终端"
+          "终端",
+          "品牌"
         ],
         "options": {
           "speed": 1,
           "name": "",
           "interactive": 0,
-          "accent": "#5b8cff"
+          "accent": "#5b8cff",
+          "brand": "Mini Code",
+          "sub": "欢迎来到人类联盟"
         },
         "files": [
           {
             "path": "boot-anim/mc-tech-archive/index.html",
-            "size": 13752,
-            "sha256": "9f38f8b9b4f4f3696f7ac19130e1c0b903e2be3be2c87dca57a9fcb911122752"
+            "size": 21197,
+            "sha256": "a131f8806ca4a321537f6dd94465c5f7ddd7b662c8e828d821e1e0055df46dd2"
           },
           {
             "path": "boot-anim/mc-tech-archive/preview.svg",
@@ -93,8 +96,8 @@
           },
           {
             "path": "boot-anim/mc-tech-archive/theme.json",
-            "size": 624,
-            "sha256": "85d8ea6f6641f0f3cefcf000a253548ea771f8ae867023de3e38e976acf0fa7e"
+            "size": 754,
+            "sha256": "1b3fccbb3d6d0007a58d7985b36f66761fc8455f1e3287541f390aaf513333a9"
           }
         ]
       }

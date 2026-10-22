@@ -7,10 +7,14 @@
 <!--
   mini_code 开机动画主题:mc-tech-archive
   结构借鉴 dsh-startup-screen / dsh-chat-wallpaper(MIT, (c) LeeRolling)的几处手法:
-    · 黑幕 → 过曝洗白 → 档案底板 → 分步文字 → 色散故障揭幕
+    · 标识开场(眼睑睁开 + 字距展开 + 扫光)→ 黑幕 → 过曝洗白 → 档案底板 → 分步文字 → 色散故障揭幕
     · 中文主字 + 英文等宽副标题逐字打出(像终端在接收数据)
     · "handoff" 信号:在【开始淡出】那一瞬间就通知宿主可以叠化,而不是等淡完
-  本文件自包含:无外部依赖、不联网、不读宿主任何东西(宿主以 sandbox iframe 加载)。
+  两条约束(别踩):
+    · 跳过 affordance 归宿主(右下角那颗 + Esc)。主题里【不要】再画一颗"跳过 Esc",
+      否则画面右下角会出现两层跳过按钮;这里的按钮只在 interactive 模式下当"继续 ▸"用。
+    · 自包含:无外部依赖、不联网、不读宿主任何东西(宿主以 sandbox iframe 加载)。
+  可调参数(query):speed / name / interactive / accent / brand / sub / ver
   配色跟 mini_code 本体一致(深色 #111214 / 主色 #5b8cff)。
 -->
 <style>
@@ -68,6 +72,60 @@
   .stage { position: absolute; inset: 0; display: flex; flex-direction: column;
     align-items: center; justify-content: center; gap: 26px; }
 
+  /* ---------- 开场:标识(第一帧就在画上,不是从纯黑里浮出来)---------- */
+  .brand {
+    position: absolute; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 30px;
+  }
+  .brand.out { opacity: 0; transform: scale(.84); filter: blur(7px);
+    transition: opacity calc(520ms * var(--k)) ease-in, transform calc(520ms * var(--k)) ease-in,
+                filter calc(520ms * var(--k)) ease-in; }
+  .eye { position: relative; width: 168px; height: 96px; opacity: .34;
+    transition: opacity calc(500ms * var(--k)) ease-out; }
+  .eye.open { opacity: 1; }
+  /* 眼球:竖向压扁 = 闭眼,展开 = 睁眼(靠 clip 保证不越出眼形) */
+  .iris { transform-box: fill-box; transform-origin: 50% 50%;
+    transform: scaleY(.05); opacity: .5; }
+  .eye.open .iris { transform: scaleY(1); opacity: 1;
+    transition: transform calc(900ms * var(--k)) cubic-bezier(.16, 1, .3, 1),
+                opacity calc(300ms * var(--k)) ease-out; }
+  /* 上下眼睑:从中间合拢到各自退回原位 */
+  .lid { transition: transform calc(900ms * var(--k)) cubic-bezier(.16, 1, .3, 1); }
+  .lid.t { transform: translateY(23px); }
+  .lid.b { transform: translateY(-23px); }
+  .eye.open .lid.t { transform: translateY(0); }
+  .eye.open .lid.b { transform: translateY(0); }
+  .closed-line { opacity: 1; transition: opacity calc(260ms * var(--k)) ease-in; }
+  .eye.open .closed-line { opacity: 0; }
+  /* 睁开后掠过的一道高光 */
+  .glint { opacity: 0; }
+  .eye.open .glint { animation: glint calc(760ms * var(--k)) ease-out calc(560ms * var(--k)) 1; }
+  @keyframes glint {
+    0% { opacity: 0; transform: translateX(-46px); }
+    25% { opacity: .95; }
+    100% { opacity: 0; transform: translateX(46px); }
+  }
+  .brandtext { text-align: center; }
+  .word {
+    font-size: 34px; font-weight: 700; line-height: 1.1; color: var(--text);
+    letter-spacing: -.02em; opacity: .16; filter: blur(7px);
+  }
+  .word.in { letter-spacing: .3em; opacity: 1; filter: blur(0);
+    transition: letter-spacing calc(920ms * var(--k)) cubic-bezier(.16, 1, .3, 1),
+                opacity calc(560ms * var(--k)) ease-out, filter calc(560ms * var(--k)) ease-out; }
+  .word::after { content: ""; display: block; width: 0; height: 2px; margin: 16px auto 0;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent); opacity: 0; }
+  .word.in::after { width: 214px; opacity: .85;
+    transition: width calc(820ms * var(--k)) cubic-bezier(.4, 0, .2, 1) calc(180ms * var(--k)),
+                opacity calc(300ms * var(--k)) ease-out; }
+  .sub { margin-top: 18px; font-size: 15px; letter-spacing: .42em; color: var(--text3);
+    opacity: 0; transform: translateY(8px); text-indent: .42em; }
+  .sub.in { opacity: 1; transform: translateY(0);
+    transition: opacity calc(600ms * var(--k)) ease-out, transform calc(600ms * var(--k)) ease-out; }
+  .sub-en { margin-top: 12px; font: 10px/1 var(--mono); letter-spacing: .3em;
+    color: rgba(91, 140, 255, .75); opacity: 0; text-indent: .3em; }
+  .sub-en.in { opacity: 1; transition: opacity calc(600ms * var(--k)) ease-out calc(200ms * var(--k)); }
+
   .mark { position: relative; width: 132px; height: 132px;
     opacity: 0; transform: scale(1.06); filter: blur(6px); }
   .mark.in { opacity: 1; transform: scale(1); filter: blur(0);
@@ -94,7 +152,8 @@
                 filter calc(260ms * var(--k)) ease-in; }
   .en { margin-top: 12px; height: 18px; font: 15px/18px var(--mono); letter-spacing: .16em;
     color: var(--accent); white-space: pre; }
-  .en::after { content: "\258D"; margin-left: 2px; animation: blink calc(1s * var(--k)) step-end infinite; }
+  /* 光标只在"终端出现"之后才闪:开场那一幕不该有根孤零零的光标 */
+  .on .en::after { content: "\258D"; margin-left: 2px; animation: blink calc(1s * var(--k)) step-end infinite; }
   @keyframes blink { 50% { opacity: 0; } }
 
   /* 色散故障:三层文字错位的 RGB 分离 */
@@ -116,12 +175,12 @@
   .steps i.hit { background: var(--accent); box-shadow: 0 0 10px rgba(91, 140, 255, .7);
     transition: background calc(200ms * var(--k)) ease-out; }
 
-  .skip { position: absolute; right: 26px; bottom: 46px; border: 1px solid rgba(148, 163, 184, .35);
-    background: transparent; color: var(--text3); font: 12px/1 var(--mono); letter-spacing: .08em;
-    padding: 7px 12px; border-radius: 8px; cursor: pointer; opacity: 0; pointer-events: none; }
-  .skip.on { opacity: 1; pointer-events: auto; transition: opacity calc(400ms * var(--k)) ease-out; }
-  .skip:hover { color: var(--text); border-color: var(--accent); }
-  .skip kbd { font: inherit; opacity: .7; }
+  /* interactive 模式的「继续 ▸」。注意:不是"跳过" —— 跳过归宿主,主题再画一个就是两层按钮 */
+  .next { position: absolute; right: 26px; bottom: 46px; border: 1px solid rgba(91, 140, 255, .45);
+    background: rgba(91, 140, 255, .08); color: var(--text); font: 12px/1 var(--mono); letter-spacing: .08em;
+    padding: 8px 14px; border-radius: 8px; cursor: pointer; opacity: 0; pointer-events: none; }
+  .next.on { opacity: 1; pointer-events: auto; transition: opacity calc(400ms * var(--k)) ease-out; }
+  .next:hover { border-color: var(--accent); background: rgba(91, 140, 255, .16); }
 </style>
 </head>
 <body>
@@ -133,6 +192,56 @@
   <div class="hud hud-b"><span id="hud-sess">SESSION ----</span><span id="hud-time">--:--:--</span></div>
 
   <div class="stage">
+    <!-- 开场:眼睛睁开 → 品牌字距展开 → 小标题 -->
+    <div class="brand" id="brand">
+      <div class="eye" id="eye">
+        <svg viewBox="0 0 168 96" width="168" height="96" aria-hidden="true">
+          <defs>
+            <clipPath id="lens"><path d="M14 48Q84 2 154 48Q84 94 14 48Z"/></clipPath>
+            <radialGradient id="irisg" cx="50%" cy="42%" r="62%">
+              <stop offset="0%" stop-color="#9dbcff"/><stop offset="62%" stop-color="#5b8cff"/>
+              <stop offset="100%" stop-color="#1d3766"/>
+            </radialGradient>
+            <linearGradient id="glintg" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#fff" stop-opacity="0"/>
+              <stop offset="50%" stop-color="#fff" stop-opacity=".9"/>
+              <stop offset="100%" stop-color="#fff" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <!-- 眼形外框:第一帧就看得见,画面不是纯黑 -->
+          <path d="M14 48Q84 2 154 48Q84 94 14 48Z" fill="rgba(91,140,255,.05)"
+                stroke="rgba(91,140,255,.38)" stroke-width="1.5"/>
+          <g clip-path="url(#lens)">
+            <g class="iris" id="iris">
+              <circle cx="84" cy="48" r="24" fill="url(#irisg)"/>
+              <circle cx="84" cy="48" r="10.5" fill="#0b0d11"/>
+              <!-- 瞳孔就是终端提示符:mini_code 的"眼"其实是光标 -->
+              <path d="M79 42.5l6 5.5-6 5.5" fill="none" stroke="#e9edf3" stroke-width="2.6"
+                    stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="75" cy="39" r="3.4" fill="rgba(255,255,255,.85)"/>
+            </g>
+            <rect class="glint" x="60" y="18" width="26" height="60" fill="url(#glintg)"/>
+          </g>
+          <!-- 眼睑:底色块 + 一条睫毛线,从合拢处退回原位 -->
+          <g class="lid t" id="lidt">
+            <path d="M8 48Q84 4 160 48L160 -20L8 -20Z" fill="var(--bg)"/>
+            <path d="M14 48Q84 6 154 48" fill="none" stroke="rgba(159,176,196,.55)" stroke-width="2"/>
+          </g>
+          <g class="lid b" id="lidb">
+            <path d="M8 48Q84 92 160 48L160 116L8 116Z" fill="var(--bg)"/>
+            <path d="M14 48Q84 90 154 48" fill="none" stroke="rgba(159,176,196,.55)" stroke-width="2"/>
+          </g>
+          <path class="closed-line" d="M40 48H128" stroke="rgba(91,140,255,.8)" stroke-width="2.5"
+                stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="brandtext">
+        <div class="word" id="word"></div>
+        <div class="sub" id="sub"></div>
+        <div class="sub-en" id="sub-en"></div>
+      </div>
+    </div>
+
     <div class="mark" id="mark">
       <svg viewBox="0 0 132 132" width="132" height="132" aria-hidden="true">
         <g class="ring" fill="none" stroke-linecap="round">
@@ -157,7 +266,7 @@
 
   <div class="steps" id="steps"><i></i><i></i><i></i></div>
   <div class="flash" id="flash"></div>
-  <button class="skip" id="skip">跳过 <kbd>Esc</kbd></button>
+  <button class="next" id="next">继续 ▸</button>
 </div>
 
 <script>
@@ -168,6 +277,8 @@
   var speed = Math.min(3, Math.max(0.35, parseFloat(q.get("speed")) || 1));
   var name = (q.get("name") || "").slice(0, 24);
   var interactive = q.get("interactive") === "1";
+  var brand = (q.get("brand") || "Mini Code").slice(0, 24);
+  var sub = (q.get("sub") || "欢迎来到人类联盟").slice(0, 28);
   var reduced = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
   if (reduced) speed = Math.min(3, speed * 3);          // 系统要求减少动效 → 快进,但仍然走完
   if (q.get("accent")) document.documentElement.style.setProperty("--accent", q.get("accent"));
@@ -183,9 +294,16 @@
 
   var seq = document.getElementById("seq"), mark = document.getElementById("mark");
   var cn = document.getElementById("cn"), en = document.getElementById("en");
-  var steps = document.getElementById("steps"), skip = document.getElementById("skip");
+  var steps = document.getElementById("steps"), nextBtn = document.getElementById("next");
   var flash = document.getElementById("flash");
+  var brandEl = document.getElementById("brand"), eye = document.getElementById("eye");
+  var word = document.getElementById("word"), subEl = document.getElementById("sub");
+  var subEn = document.getElementById("sub-en");
   var finished = false, timers = [], typer = null;
+
+  word.textContent = brand;
+  subEl.textContent = sub;
+  subEn.textContent = "WELCOME TO THE HUMAN ALLIANCE";
 
   // HUD:会话号 + 实时时钟(真数据,不是贴图)
   var sess = "SESSION " + Math.random().toString(16).slice(2, 6).toUpperCase();
@@ -193,7 +311,7 @@
   var clock = document.getElementById("hud-time");
   function tick() { clock.textContent = new Date().toTimeString().slice(0, 8); }
   tick(); var clockT = setInterval(tick, 500);
-  document.getElementById("hud-r").textContent = "ARCHIVE · v" + (q.get("ver") || "1.0");
+  document.getElementById("hud-r").textContent = "ARCHIVE · v" + (q.get("ver") || "1.1");
 
   var STEPS = [
     ["装载本地会话", "LOADING LOCAL SESSIONS"],
@@ -201,7 +319,7 @@
     [name ? "欢迎 " + name + " 接入" : "权限校验通过", name ? "WELCOME, " + name.toUpperCase() : "PERMISSION VERIFIED"]
   ];
 
-  function at(ms, fn) { timers.push(setTimeout(fn, Math.round(ms * speed === 0 ? ms : ms / speed))); }
+  function at(ms, fn) { timers.push(setTimeout(fn, Math.round(ms / speed))); }
   function type(text, done) {                          // 英文等宽副标题逐字打出
     if (typer) clearInterval(typer);
     en.textContent = ""; var i = 0;
@@ -230,7 +348,7 @@
   }
   function after(n) { if (interactive && n < STEPS.length - 1) waitForClick(n + 1); else at(900, function () { next(n + 1); }); }
   var pending = null;
-  function waitForClick(n) { pending = n; skip.classList.add("on"); skip.textContent = "继续 ▸"; }
+  function waitForClick(n) { pending = n; nextBtn.classList.add("on"); }
   function finale() {
     seq.classList.add("glitch");
     at(360, function () {
@@ -247,26 +365,35 @@
     send("done", { by: by });
     seq.style.display = "none";                        // 交还画面,别挡住下面的 UI
   }
-  skip.addEventListener("click", function () {
-    if (pending != null) { var n = pending; pending = null; skip.textContent = "跳过 Esc"; next(n); return; }
-    finish("skip");
+  // 推进按钮(interactive 专用)。跳过不在这里 —— 宿主右下角那颗才是跳过。
+  nextBtn.addEventListener("click", function () {
+    if (pending == null) return;
+    var n = pending; pending = null; nextBtn.classList.remove("on"); next(n);
   });
   addEventListener("keydown", function (e) {
     if (e.key === "Escape") { e.preventDefault(); finish("skip"); }
     else if ((e.key === "Enter" || e.key === " ") && pending != null) {
-      e.preventDefault(); skip.click();
+      e.preventDefault(); nextBtn.click();
     }
   });
 
   // ---- 时间线(毫秒 @1x)----
-  send("ready", { durationMs: 7300, maxMs: 16000, steps: STEPS.length, reduced: reduced });
-  skip.classList.add("on");
-  mark.classList.add("in");
-  at(1500, function () { mark.classList.add("burst"); flash.classList.add("go"); });
-  at(1750, function () { seq.classList.add("on"); mark.classList.add("hidden"); });
-  at(1900, function () { steps.classList.add("on"); next(0); });
+  // 0    第一帧:眼形外框 + 糊着的品牌字已经在画上
+  // 60   眼睑睁开(900ms)→ 瞳孔里是终端光标 → 560ms 后掠过一道高光
+  // 520  品牌字字距展开 + 底下一根线擦出
+  // 1200 小标题「欢迎来到人类联盟」+ 英文小字
+  // 2250 整块标识缩小退场,同时环形准星进场
+  // 3250 过曝洗白 → 档案底板 → 三步序列 → 色散故障揭幕
+  send("ready", { durationMs: 8600, maxMs: 17000, steps: STEPS.length, reduced: reduced });
+  at(60, function () { eye.classList.add("open"); });
+  at(520, function () { word.classList.add("in"); });
+  at(1200, function () { subEl.classList.add("in"); subEn.classList.add("in"); });
+  at(2250, function () { brandEl.classList.add("out"); mark.classList.add("in"); });
+  at(3250, function () { mark.classList.add("burst"); flash.classList.add("go"); });
+  at(3500, function () { seq.classList.add("on"); mark.classList.add("hidden"); });
+  at(3650, function () { steps.classList.add("on"); next(0); });
 
-  setTimeout(function () { finish("timeout"); }, 16000); // 自身兜底:任何异常都不能把人关在黑屏里
+  setTimeout(function () { finish("timeout"); }, 17000); // 自身兜底:任何异常都不能把人关在黑屏里
 })();
 </script>
 </body>

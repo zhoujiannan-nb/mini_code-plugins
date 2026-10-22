@@ -11,7 +11,7 @@ mini_code 的「配置 → 开机动画 → 在线获取」直接读本仓库根
 
 | 主题 | 时长 | 一句话 |
 |---|---|---|
-| [技术档案](boot-anim/mc-tech-archive/) `mc-tech-archive` | 7.3s | 黑幕准星 → 过曝洗白 → 档案底板 → 三步文字序列 → 色散故障揭幕 |
+| [技术档案](boot-anim/mc-tech-archive/) `mc-tech-archive` | 8.6s | 睁眼开场 + 品牌字距展开 → 环形准星 → 过曝洗白 → 三步文字序列 → 色散故障揭幕 |
 | [极简终端](boot-anim/mc-minimal/) `mc-minimal` | 2.6s | 四行终端打字 + 扫描线 + `ready.`，嫌长就用这个 |
 
 ## 本地跑起来看
