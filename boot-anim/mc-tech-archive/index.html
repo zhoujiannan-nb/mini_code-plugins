@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>mini_code 开机动画 · 技术档案</title>
+<!--
+  mini_code 开机动画主题:mc-tech-archive
+  结构借鉴 dsh-startup-screen / dsh-chat-wallpaper(MIT, (c) LeeRolling)的几处手法:
+    · 黑幕 → 过曝洗白 → 档案底板 → 分步文字 → 色散故障揭幕
+    · 中文主字 + 英文等宽副标题逐字打出(像终端在接收数据)
+    · "handoff" 信号:在【开始淡出】那一瞬间就通知宿主可以叠化,而不是等淡完
+  本文件自包含:无外部依赖、不联网、不读宿主任何东西(宿主以 sandbox iframe 加载)。
+  配色跟 mini_code 本体一致(深色 #111214 / 主色 #5b8cff)。
+-->
+<style>
+  :root {
+    --k: 1;                       /* 时间缩放:速度 = 1/--k,所有时长都乘它 */
+    --accent: #5b8cff;
+    --bg: #0b0d11;
+    --text: #e9edf3;
+    --text3: #9fb0c4;
+    --mono: "JetBrains Mono", "Cascadia Mono", Consolas, ui-monospace, monospace;
+    --ui: "Segoe UI", "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; overflow: hidden; }
+  body { background: var(--bg); font-family: var(--ui); -webkit-font-smoothing: antialiased; }
+
+  .seq { position: fixed; inset: 0; overflow: hidden; background: var(--bg); }
+  .seq.gone { opacity: 0; transform: scale(1.035); filter: blur(5px);
+    transition: opacity calc(700ms * var(--k)) cubic-bezier(.4, 0, .2, 1),
+                transform calc(700ms * var(--k)) cubic-bezier(.4, 0, .2, 1),
+                filter calc(700ms * var(--k)) ease-out; }
+
+  /* ---------- 底板:网格 + 扫描线 + 四角括号 + HUD ---------- */
+  .grid, .scan { position: absolute; inset: 0; pointer-events: none; opacity: 0; }
+  .on .grid { opacity: 1; transition: opacity calc(700ms * var(--k)) ease-out; }
+  .grid {
+    background-image:
+      linear-gradient(rgba(148, 163, 184, .055) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(148, 163, 184, .055) 1px, transparent 1px);
+    background-size: 44px 44px, 44px 44px;
+    -webkit-mask-image: radial-gradient(ellipse 70% 62% at 50% 46%, #000 35%, transparent 100%);
+            mask-image: radial-gradient(ellipse 70% 62% at 50% 46%, #000 35%, transparent 100%);
+  }
+  .scan {
+    background: linear-gradient(180deg, transparent 0%, rgba(91, 140, 255, .16) 48%, transparent 60%);
+    height: 42%; animation: sweep calc(3.2s * var(--k)) linear infinite;
+  }
+  @keyframes sweep { from { transform: translateY(-100%); } to { transform: translateY(260%); } }
+
+  .hud {
+    position: absolute; left: 26px; right: 26px; display: flex; justify-content: space-between;
+    font: 11px/1 var(--mono); letter-spacing: .12em; color: var(--text3);
+    opacity: 0; text-transform: uppercase;
+  }
+  .hud-t { top: 22px; } .hud-b { bottom: 22px; }
+  .on .hud { opacity: .85; transition: opacity calc(600ms * var(--k)) ease-out calc(160ms * var(--k)); }
+  .brk { position: absolute; width: 18px; height: 18px; border: 1px solid rgba(91, 140, 255, .5); opacity: 0; }
+  .on .brk { opacity: 1; transition: opacity calc(500ms * var(--k)) ease-out calc(220ms * var(--k)); }
+  .brk.tl { top: 16px; left: 16px; border-right: 0; border-bottom: 0; }
+  .brk.tr { top: 16px; right: 16px; border-left: 0; border-bottom: 0; }
+  .brk.bl { bottom: 16px; left: 16px; border-right: 0; border-top: 0; }
+  .brk.br { bottom: 16px; right: 16px; border-left: 0; border-top: 0; }
+
+  /* ---------- 中央舞台 ---------- */
+  .stage { position: absolute; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 26px; }
+
+  .mark { position: relative; width: 132px; height: 132px;
+    opacity: 0; transform: scale(1.06); filter: blur(6px); }
+  .mark.in { opacity: 1; transform: scale(1); filter: blur(0);
+    transition: opacity calc(820ms * var(--k)) ease-out,
+                transform calc(900ms * var(--k)) cubic-bezier(.16, 1, .3, 1),
+                filter calc(820ms * var(--k)) ease-out; }
+  .mark.burst { filter: brightness(3.4) blur(1px);
+    transition: filter calc(260ms * var(--k)) ease-in; }
+  .mark.hidden { opacity: 0; transform: scale(.94);
+    transition: opacity calc(420ms * var(--k)) ease-in, transform calc(420ms * var(--k)) ease-in; }
+  .ring { transform-origin: 50% 50%; animation: spin calc(38s * var(--k)) linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .arc { stroke-dasharray: 226; stroke-dashoffset: 226; }
+  .mark.in .arc { stroke-dashoffset: 40;
+    transition: stroke-dashoffset calc(1500ms * var(--k)) cubic-bezier(.4, 0, .2, 1) calc(300ms * var(--k)); }
+
+  .cap { text-align: center; min-height: 108px; }
+  .cn { font-size: 38px; font-weight: 700; letter-spacing: .06em; color: var(--text);
+    opacity: 0; transform: translateY(12px); }
+  .cn.show { opacity: 1; transform: translateY(0);
+    transition: opacity calc(380ms * var(--k)) ease-out, transform calc(420ms * var(--k)) cubic-bezier(.16, 1, .3, 1); }
+  .cn.out { opacity: 0; transform: translateY(-10px); filter: blur(3px);
+    transition: opacity calc(260ms * var(--k)) ease-in, transform calc(260ms * var(--k)) ease-in,
+                filter calc(260ms * var(--k)) ease-in; }
+  .en { margin-top: 12px; height: 18px; font: 15px/18px var(--mono); letter-spacing: .16em;
+    color: var(--accent); white-space: pre; }
+  .en::after { content: "\258D"; margin-left: 2px; animation: blink calc(1s * var(--k)) step-end infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* 色散故障:三层文字错位的 RGB 分离 */
+  .glitch .cn { color: var(--text);
+    text-shadow: 2px 0 rgba(255, 60, 90, .85), -2px 0 rgba(60, 200, 255, .85);
+    animation: shake calc(120ms * var(--k)) steps(2) 3; }
+  @keyframes shake { 33% { transform: translate(-3px, 1px); } 66% { transform: translate(3px, -1px); } }
+
+  /* 过曝洗白 */
+  .flash { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; }
+  .flash.go { animation: pop calc(420ms * var(--k)) ease-out; }
+  @keyframes pop { 0% { opacity: 0; } 22% { opacity: .96; } 100% { opacity: 0; } }
+
+  /* 步骤指示 */
+  .steps { position: absolute; bottom: 52px; left: 0; right: 0; display: flex;
+    justify-content: center; gap: 10px; opacity: 0; }
+  .steps.on { opacity: 1; transition: opacity calc(400ms * var(--k)) ease-out; }
+  .steps i { width: 26px; height: 2px; background: rgba(148, 163, 184, .25); border-radius: 2px; }
+  .steps i.hit { background: var(--accent); box-shadow: 0 0 10px rgba(91, 140, 255, .7);
+    transition: background calc(200ms * var(--k)) ease-out; }
+
+  .skip { position: absolute; right: 26px; bottom: 46px; border: 1px solid rgba(148, 163, 184, .35);
+    background: transparent; color: var(--text3); font: 12px/1 var(--mono); letter-spacing: .08em;
+    padding: 7px 12px; border-radius: 8px; cursor: pointer; opacity: 0; pointer-events: none; }
+  .skip.on { opacity: 1; pointer-events: auto; transition: opacity calc(400ms * var(--k)) ease-out; }
+  .skip:hover { color: var(--text); border-color: var(--accent); }
+  .skip kbd { font: inherit; opacity: .7; }
+</style>
+</head>
+<body>
+<div class="seq" id="seq">
+  <div class="grid"></div>
+  <div class="scan"></div>
+  <div class="brk tl"></div><div class="brk tr"></div><div class="brk bl"></div><div class="brk br"></div>
+  <div class="hud hud-t"><span>MINICODE // BOOT SEQ</span><span id="hud-r">ARCHIVE · LOCAL</span></div>
+  <div class="hud hud-b"><span id="hud-sess">SESSION ----</span><span id="hud-time">--:--:--</span></div>
+
+  <div class="stage">
+    <div class="mark" id="mark">
+      <svg viewBox="0 0 132 132" width="132" height="132" aria-hidden="true">
+        <g class="ring" fill="none" stroke-linecap="round">
+          <!-- 环形准星:缺口留在正下方,不挡住底部文字 -->
+          <circle cx="66" cy="66" r="58" stroke="rgba(91,140,255,.22)" stroke-width="1"/>
+          <circle class="arc" cx="66" cy="66" r="58" stroke="#5b8cff" stroke-width="2"
+                  stroke-dasharray="226" transform="rotate(104 66 66)"/>
+          <g stroke="rgba(91,140,255,.55)" stroke-width="1.5">
+            <path d="M66 4v9M66 119v9M4 66h9M119 66h9"/>
+          </g>
+        </g>
+        <g fill="none" stroke="#e9edf3" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M47 55l11 11-11 11"/><path d="M66 79h21"/>
+        </g>
+      </svg>
+    </div>
+    <div class="cap">
+      <div class="cn" id="cn"></div>
+      <div class="en" id="en"></div>
+    </div>
+  </div>
+
+  <div class="steps" id="steps"><i></i><i></i><i></i></div>
+  <div class="flash" id="flash"></div>
+  <button class="skip" id="skip">跳过 <kbd>Esc</kbd></button>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var ID = "mc-tech-archive";
+  var q = new URLSearchParams(location.search);
+  var speed = Math.min(3, Math.max(0.35, parseFloat(q.get("speed")) || 1));
+  var name = (q.get("name") || "").slice(0, 24);
+  var interactive = q.get("interactive") === "1";
+  var reduced = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduced) speed = Math.min(3, speed * 3);          // 系统要求减少动效 → 快进,但仍然走完
+  if (q.get("accent")) document.documentElement.style.setProperty("--accent", q.get("accent"));
+  document.documentElement.style.setProperty("--k", String(1 / speed));
+
+  function send(type, extra) {                          // 与宿主的唯一通道(跨 iframe)
+    try {
+      var m = { mc: "boot-anim", type: type, id: ID };
+      for (var k in extra) m[k] = extra[k];
+      parent.postMessage(m, "*");
+    } catch (e) {}
+  }
+
+  var seq = document.getElementById("seq"), mark = document.getElementById("mark");
+  var cn = document.getElementById("cn"), en = document.getElementById("en");
+  var steps = document.getElementById("steps"), skip = document.getElementById("skip");
+  var flash = document.getElementById("flash");
+  var finished = false, timers = [], typer = null;
+
+  // HUD:会话号 + 实时时钟(真数据,不是贴图)
+  var sess = "SESSION " + Math.random().toString(16).slice(2, 6).toUpperCase();
+  document.getElementById("hud-sess").textContent = sess;
+  var clock = document.getElementById("hud-time");
+  function tick() { clock.textContent = new Date().toTimeString().slice(0, 8); }
+  tick(); var clockT = setInterval(tick, 500);
+  document.getElementById("hud-r").textContent = "ARCHIVE · v" + (q.get("ver") || "1.0");
+
+  var STEPS = [
+    ["装载本地会话", "LOADING LOCAL SESSIONS"],
+    ["接通模型通道", "OPENING MODEL CHANNEL"],
+    [name ? "欢迎 " + name + " 接入" : "权限校验通过", name ? "WELCOME, " + name.toUpperCase() : "PERMISSION VERIFIED"]
+  ];
+
+  function at(ms, fn) { timers.push(setTimeout(fn, Math.round(ms * speed === 0 ? ms : ms / speed))); }
+  function type(text, done) {                          // 英文等宽副标题逐字打出
+    if (typer) clearInterval(typer);
+    en.textContent = ""; var i = 0;
+    typer = setInterval(function () {
+      en.textContent = text.slice(0, ++i);
+      if (i >= text.length) { clearInterval(typer); typer = null; if (done) done(); }
+    }, Math.max(6, 22 / speed));
+  }
+  function showStep(n, then) {
+    cn.className = "cn";
+    void cn.offsetWidth;                               // 强制重排,让 out→show 的过渡重新生效
+    cn.textContent = STEPS[n][0];
+    cn.classList.add("show");
+    if (steps.children[n]) steps.children[n].classList.add("hit");
+    send("step", { step: n });
+    type(STEPS[n][1], then);
+  }
+  function next(n) {
+    if (n >= STEPS.length) { finale(); return; }
+    if (n > 0) {
+      cn.classList.remove("show"); cn.classList.add("out");
+      at(240, function () { showStep(n, function () { after(n); }); });
+    } else {
+      showStep(n, function () { after(n); });
+    }
+  }
+  function after(n) { if (interactive && n < STEPS.length - 1) waitForClick(n + 1); else at(900, function () { next(n + 1); }); }
+  var pending = null;
+  function waitForClick(n) { pending = n; skip.classList.add("on"); skip.textContent = "继续 ▸"; }
+  function finale() {
+    seq.classList.add("glitch");
+    at(360, function () {
+      // handoff:淡出【开始】的瞬间就告诉宿主可以叠化了(等淡完再通知会闪一下)
+      seq.classList.add("gone");
+      send("handoff");
+      at(700, function () { finish("auto"); });
+    });
+  }
+  function finish(by) {
+    if (finished) return;
+    finished = true;
+    timers.forEach(clearTimeout); if (typer) clearInterval(typer); clearInterval(clockT);
+    send("done", { by: by });
+    seq.style.display = "none";                        // 交还画面,别挡住下面的 UI
+  }
+  skip.addEventListener("click", function () {
+    if (pending != null) { var n = pending; pending = null; skip.textContent = "跳过 Esc"; next(n); return; }
+    finish("skip");
+  });
+  addEventListener("keydown", function (e) {
+    if (e.key === "Escape") { e.preventDefault(); finish("skip"); }
+    else if ((e.key === "Enter" || e.key === " ") && pending != null) {
+      e.preventDefault(); skip.click();
+    }
+  });
+
+  // ---- 时间线(毫秒 @1x)----
+  send("ready", { durationMs: 7300, maxMs: 16000, steps: STEPS.length, reduced: reduced });
+  skip.classList.add("on");
+  mark.classList.add("in");
+  at(1500, function () { mark.classList.add("burst"); flash.classList.add("go"); });
+  at(1750, function () { seq.classList.add("on"); mark.classList.add("hidden"); });
+  at(1900, function () { steps.classList.add("on"); next(0); });
+
+  setTimeout(function () { finish("timeout"); }, 16000); // 自身兜底:任何异常都不能把人关在黑屏里
+})();
+</script>
+</body>
+</html>

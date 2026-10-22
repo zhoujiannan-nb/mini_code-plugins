@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>mini_code 开机动画 · 宿主模拟器</title>
+<!--
+  写主题时用这个页面替代 mini_code 本体:左边选主题,右边按真宿主的规则加载
+  (sandbox iframe + postMessage + 硬超时 + handoff 叠化),改一行刷新即看。
+  用法(必须走 http,file:// 下 postMessage 与 fetch 都不可靠):
+      cd mini_code-plugins && python -m http.server 8700
+      打开 http://127.0.0.1:8700/preview/
+-->
+<style>
+  :root { --bg: #111214; --s: #1b1e23; --s2: #24282f; --bd: #2b2f38; --tx: #e9edf3; --t3: #9fb0c4; --ac: #5b8cff;
+          --mono: "JetBrains Mono", Consolas, monospace; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--tx); font: 14px/1.6 "Segoe UI", "Microsoft YaHei UI", sans-serif;
+    display: flex; height: 100vh; overflow: hidden; }
+  aside { flex: 0 0 260px; border-right: 1px solid var(--bd); padding: 14px; overflow-y: auto; background: var(--s); }
+  h1 { font-size: 15px; margin-bottom: 12px; }
+  .th { border: 1px solid var(--bd); border-radius: 10px; padding: 8px; margin-bottom: 10px; cursor: pointer;
+    background: var(--s2); }
+  .th:hover { border-color: var(--ac); }
+  .th.sel { border-color: var(--ac); box-shadow: 0 0 0 2px rgba(91, 140, 255, .2); }
+  .th b { display: block; font-size: 13px; }
+  .th span { font-size: 11px; color: var(--t3); }
+  .th img { width: 100%; border-radius: 6px; margin-top: 6px; display: block; background: #000; }
+  main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  .bar { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-bottom: 1px solid var(--bd);
+    background: var(--s); font-size: 12px; color: var(--t3); flex-wrap: wrap; }
+  .bar label { display: flex; align-items: center; gap: 6px; }
+  .bar input[type=range] { width: 110px; }
+  button { background: var(--ac); border: 0; color: #fff; padding: 6px 12px; border-radius: 8px;
+    cursor: pointer; font-size: 12px; font-weight: 600; }
+  button.ghost { background: transparent; border: 1px solid var(--bd); color: var(--t3); }
+  #stage { flex: 1; position: relative; min-height: 0; background: #fff; }
+  #stage.dark { background: #111214; }
+  iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: transparent;
+    transition: opacity .7s cubic-bezier(.4, 0, .2, 1); }
+  .ui { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    color: #999; font-size: 13px; }
+  #log { flex: 0 0 168px; border-top: 1px solid var(--bd); background: #0d0f13; padding: 8px 14px;
+    font: 11px/1.7 var(--mono); color: var(--t3); overflow-y: auto; }
+  #log .ev { color: var(--ac); }
+  .fake { font-size: 15px; color: #333; }
+  #stage.dark .fake { color: #ccc; }
+</style>
+</head>
+<body>
+<aside>
+  <h1>开机动画主题</h1>
+  <div id="list">读取 index.json 中…(记得用 http 打开)</div>
+</aside>
+<main>
+  <div class="bar">
+    <button id="play">▶ 播放</button>
+    <button class="ghost" id="stop">停</button>
+    <label>速度 <input id="speed" type="range" min="0.35" max="3" step="0.05" value="1"><b id="spdv">1.00×</b></label>
+    <label>身份名 <input id="name" size="10" placeholder="留空则不显示"></label>
+    <label><input id="inter" type="checkbox"> interactive</label>
+    <label><input id="darkbg" type="checkbox" checked> 深色底</label>
+    <span id="stat">未播放</span>
+  </div>
+  <div id="stage" class="dark">
+    <div class="fake" id="fake">← 这就是"聊天界面":动画应该盖在它上面,并且演完干净地交还</div>
+  </div>
+  <div id="log"></div>
+</main>
+<script>
+(function () {
+  "use strict";
+  var stage = document.getElementById("stage"), log = document.getElementById("log");
+  var frame = null, watchdog = null, t0 = 0, cur = null;
+
+  function say(t, cls) {
+    var d = document.createElement("div");
+    d.innerHTML = '<span class="' + (cls || "") + '">' + new Date().toTimeString().slice(0, 8) + " " + t + "</span>";
+    log.appendChild(d); log.scrollTop = log.scrollHeight;
+  }
+
+  fetch("../index.json").then(function (r) { return r.json(); }).then(function (idx) {
+    var box = document.getElementById("list"); box.innerHTML = "";
+    var items = (idx.kinds["boot-anim"] || []).concat(idx.kinds["wallpaper"] || []);
+    (idx.kinds["boot-anim"] || []).forEach(function (t) {
+      var el = document.createElement("div");
+      el.className = "th";
+      el.innerHTML = "<b>" + t.name + " " + t.version + "</b><span>" + (t.durationMs / 1000).toFixed(1) +
+        "s · " + t.colors.join("/") + "</span>" + (t.preview ? '<img src="../' + t.preview + '">' : "");
+      el.onclick = function () {
+        document.querySelectorAll(".th").forEach(function (x) { x.classList.remove("sel"); });
+        el.classList.add("sel"); cur = t; play();
+      };
+      box.appendChild(el);
+    });
+    say("载入 " + (idx.kinds["boot-anim"] || []).length + " 个主题");
+  }).catch(function (e) { say("index.json 读取失败:" + e.message); });
+
+  function play() {
+    if (!cur) return say("先选一个主题", "ev");
+    stop();
+    var q = "?speed=" + document.getElementById("speed").value +
+            "&name=" + encodeURIComponent(document.getElementById("name").value || "") +
+            "&interactive=" + (document.getElementById("inter").checked ? 1 : 0);
+    frame = document.createElement("iframe");
+    frame.setAttribute("sandbox", "allow-scripts");     // 和真宿主一致:不给 same-origin
+    frame.src = "../" + cur.path + "/" + cur.entry + q;
+    stage.appendChild(frame);
+    t0 = Date.now();
+    document.getElementById("stat").textContent = cur.name + " 播放中…";
+    say("play " + cur.id + q, "ev");
+    clearTimeout(watchdog);
+    watchdog = setTimeout(function () {
+      say("硬超时 " + cur.maxMs + "ms → 宿主强制收走", "ev"); stop();
+    }, cur.maxMs);
+  }
+  function stop() {
+    clearTimeout(watchdog);
+    if (frame) { frame.remove(); frame = null; }
+    document.getElementById("stat").textContent = "已停止";
+  }
+  addEventListener("message", function (e) {
+    var d = e.data || {};
+    if (!d || d.mc !== "boot-anim") return;
+    var ms = Date.now() - t0;
+    say("+" + ms + "ms  " + d.type + (d.by ? " (" + d.by + ")" : "") + (d.step != null ? " step=" + d.step : ""), "ev");
+    if (d.type === "handoff" && frame) frame.style.opacity = "0";  // 叠化:他开始淡,我就露出来
+    if (d.type === "done") { say("交还画面,移除 iframe"); setTimeout(stop, 40); }
+    if (d.type === "ready") {
+      var want = Math.min(3, Math.max(0.35, parseFloat(document.getElementById("speed").value) || 1));
+      if (!d.maxMs || d.maxMs < 1000) say("⚠ 主题没报 maxMs", "ev");
+      if (d.reduced) say("主题检测到 prefers-reduced-motion,已自动快进");
+    }
+  });
+  addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && frame) { say("宿主转发 Esc → 跳过"); stop(); }
+  });
+  document.getElementById("play").onclick = play;
+  document.getElementById("stop").onclick = stop;
+  document.getElementById("speed").oninput = function () {
+    document.getElementById("spdv").textContent = (Math.round(this.value * 100) / 100).toFixed(2) + "×";
+  };
+  document.getElementById("darkbg").onchange = function () {
+    stage.classList.toggle("dark", this.checked);
+    document.querySelector(".fake").textContent = this.checked
+      ? "← 这就是\"聊天界面\":动画应该盖在它上面,并且演完干净地交还"
+      : "← 浅色底:主题如果只做了深色,这里就该看出来";
+  };
+})();
+</script>
+</body>
+</html>

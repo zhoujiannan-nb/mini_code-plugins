@@ -1,0 +1,23 @@
+{
+  "id": "mc-tech-archive",
+  "name": "技术档案",
+  "nameEn": "Tech Archive",
+  "author": "zhoujiannan-nb",
+  "version": "1.0.0",
+  "license": "MIT",
+  "entry": "index.html",
+  "preview": "preview.svg",
+  "description": "黑幕准星 → 过曝洗白 → 档案底板 → 三步文字序列(中文主字 + 英文逐字副标题)→ 色散故障揭幕。约 7.3 秒。",
+  "durationMs": 7300,
+  "maxMs": 16000,
+  "colors": ["dark"],
+  "interactive": false,
+  "minViewport": 480,
+  "tags": ["开机", "科幻", "终端"],
+  "options": {
+    "speed": 1,
+    "name": "",
+    "interactive": 0,
+    "accent": "#5b8cff"
+  }
+}

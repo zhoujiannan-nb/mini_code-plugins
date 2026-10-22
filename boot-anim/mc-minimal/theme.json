@@ -1,0 +1,22 @@
+{
+  "id": "mc-minimal",
+  "name": "极简终端",
+  "nameEn": "Minimal Terminal",
+  "author": "zhoujiannan-nb",
+  "version": "1.0.0",
+  "license": "MIT",
+  "entry": "index.html",
+  "preview": "preview.svg",
+  "description": "四行终端打字 + 扫描线 + ready. 光标,2.6 秒收工。给嫌动画太长的人用的短路选项。",
+  "durationMs": 2600,
+  "maxMs": 9000,
+  "colors": ["dark", "light"],
+  "interactive": false,
+  "minViewport": 320,
+  "tags": ["极简", "终端", "短"],
+  "options": {
+    "speed": 1,
+    "name": "",
+    "accent": "#7ee2a8"
+  }
+}

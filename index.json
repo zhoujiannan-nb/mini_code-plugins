@@ -1,0 +1,103 @@
+{
+  "schema": 1,
+  "repo": "https://github.com/zhoujiannan-nb/mini_code-plugins",
+  "ref": "main",
+  "kinds": {
+    "boot-anim": [
+      {
+        "id": "mc-minimal",
+        "name": "极简终端",
+        "nameEn": "Minimal Terminal",
+        "author": "zhoujiannan-nb",
+        "version": "1.0.0",
+        "license": "MIT",
+        "description": "四行终端打字 + 扫描线 + ready. 光标,2.6 秒收工。给嫌动画太长的人用的短路选项。",
+        "path": "boot-anim/mc-minimal",
+        "entry": "index.html",
+        "preview": "preview.svg",
+        "durationMs": 2600,
+        "maxMs": 9000,
+        "colors": [
+          "dark",
+          "light"
+        ],
+        "interactive": false,
+        "minViewport": 320,
+        "tags": [
+          "极简",
+          "终端",
+          "短"
+        ],
+        "options": {
+          "speed": 1,
+          "name": "",
+          "accent": "#7ee2a8"
+        },
+        "files": [
+          {
+            "path": "boot-anim/mc-minimal/index.html",
+            "size": 3961,
+            "sha256": "5a16bbd36d77d3b021f8a7c3070aec9ec452fd2a64b9c8e6fa1497d8f5d7d293"
+          },
+          {
+            "path": "boot-anim/mc-minimal/preview.svg",
+            "size": 1740,
+            "sha256": "f193556f4db680722344b3da898bc815ddadaa30d9724b7e25e3a507fd542bd1"
+          },
+          {
+            "path": "boot-anim/mc-minimal/theme.json",
+            "size": 568,
+            "sha256": "5e2d5344bd20a637379c33e95684115eaafcc91d013f278e8f99768c8efe1a6f"
+          }
+        ]
+      },
+      {
+        "id": "mc-tech-archive",
+        "name": "技术档案",
+        "nameEn": "Tech Archive",
+        "author": "zhoujiannan-nb",
+        "version": "1.0.0",
+        "license": "MIT",
+        "description": "黑幕准星 → 过曝洗白 → 档案底板 → 三步文字序列(中文主字 + 英文逐字副标题)→ 色散故障揭幕。约 7.3 秒。",
+        "path": "boot-anim/mc-tech-archive",
+        "entry": "index.html",
+        "preview": "preview.svg",
+        "durationMs": 7300,
+        "maxMs": 16000,
+        "colors": [
+          "dark"
+        ],
+        "interactive": false,
+        "minViewport": 480,
+        "tags": [
+          "开机",
+          "科幻",
+          "终端"
+        ],
+        "options": {
+          "speed": 1,
+          "name": "",
+          "interactive": 0,
+          "accent": "#5b8cff"
+        },
+        "files": [
+          {
+            "path": "boot-anim/mc-tech-archive/index.html",
+            "size": 13752,
+            "sha256": "9f38f8b9b4f4f3696f7ac19130e1c0b903e2be3be2c87dca57a9fcb911122752"
+          },
+          {
+            "path": "boot-anim/mc-tech-archive/preview.svg",
+            "size": 1390,
+            "sha256": "33ed9ccbd9d5a00cc796b00c05d9c7b06dcd99f87263923dd70418057e55564a"
+          },
+          {
+            "path": "boot-anim/mc-tech-archive/theme.json",
+            "size": 624,
+            "sha256": "85d8ea6f6641f0f3cefcf000a253548ea771f8ae867023de3e38e976acf0fa7e"
+          }
+        ]
+      }
+    ]
+  }
+}
