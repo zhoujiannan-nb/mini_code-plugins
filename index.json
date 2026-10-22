@@ -9,9 +9,9 @@
         "name": "接入序列",
         "nameEn": "Access Sequence",
         "author": "zhoujiannan-nb",
-        "version": "1.0.0",
+        "version": "1.0.1",
         "license": "MIT",
-        "description": "复刻 dsh-startup-screen 的电影感开机序列:黑幕芯片标识 -> 过曝洗白 -> 五步接入(英文女声真声播报 + 底噪 + 咔哒音效)-> 色散故障揭幕。品牌已换成 Mini Code,播报是原片真声素材(不是 TTS),终幕只念一声 Welcome。约 17.8 秒,嫌长调速度,不想听勾静默。",
+        "description": "最有大片感的一个:黑屏亮起 Mini Code 的标志,一屏一屏走到进软件,中间有个外国女声在念操作提示,最后说一声 Welcome。全程约 18 秒,嫌慢就把速度调快,不想听声音就勾「静默」。",
         "path": "boot-anim/mc-access",
         "entry": "index.html",
         "preview": "preview.svg",
@@ -106,8 +106,8 @@
           },
           {
             "path": "boot-anim/mc-access/theme.json",
-            "size": 1095,
-            "sha256": "052d397503ba569150d7a1cd3672d9e7c6fc48be50145e89533196c360cc496a"
+            "size": 1008,
+            "sha256": "44481b2b41f63d8bc7f922b48c3e13dad31abfa24aee52c247ae14fc16b3a325"
           }
         ]
       },
@@ -116,9 +116,9 @@
         "name": "极简终端",
         "nameEn": "Minimal Terminal",
         "author": "zhoujiannan-nb",
-        "version": "1.0.1",
+        "version": "1.0.2",
         "license": "MIT",
-        "description": "四行终端打字 + 扫描线 + ready. 光标,2.6 秒收工。给嫌动画太长的人用的短路选项。",
+        "description": "最短最安静:几行终端字打出来就进软件,2.6 秒,全程没声音。不想等动画就用这个。",
         "path": "boot-anim/mc-minimal",
         "entry": "index.html",
         "preview": "preview.svg",
@@ -153,8 +153,8 @@
           },
           {
             "path": "boot-anim/mc-minimal/theme.json",
-            "size": 568,
-            "sha256": "cf215b6e22072d7444972b03ae0970a7454e499a13ae7ab97b0fe29c251e937f"
+            "size": 569,
+            "sha256": "39149fbc704e2a3a93d8cd390c4c505dfd538c61406a2ca3d0e77b752d46e613"
           }
         ]
       },
@@ -163,9 +163,9 @@
         "name": "技术档案",
         "nameEn": "Tech Archive",
         "author": "zhoujiannan-nb",
-        "version": "1.2.1",
+        "version": "1.2.2",
         "license": "MIT",
-        "description": "睁眼开场(瞳孔是终端光标)+ 品牌字距展开 + 「欢迎来到人类联盟」→ 环形准星 → 过曝洗白(带音效)→ 三步文字序列 → 色散故障揭幕。约 9.4 秒,只有音效没有人声;要带真声播报的选「接入序列」。",
+        "description": "一只眼睛睁开(瞳孔是个光标),跳出「欢迎来到人类联盟」和几行进度,约 9 秒进软件。只有音效,没人说话;想要有声音的那个选「接入序列」。",
         "path": "boot-anim/mc-tech-archive",
         "entry": "index.html",
         "preview": "preview.svg",
@@ -210,8 +210,8 @@
           },
           {
             "path": "boot-anim/mc-tech-archive/theme.json",
-            "size": 840,
-            "sha256": "f8dc7f3cc129d808efa482d1c062f10f55a1ffc0e12d695b152dfd8829ba8919"
+            "size": 764,
+            "sha256": "48ac1922a866416da94b33a5af063632b95d78e6857ccafc4b32e0a64f2604f0"
           }
         ]
       }
