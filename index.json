@@ -159,6 +159,132 @@
         ]
       },
       {
+        "id": "mc-secret",
+        "name": "机密接入",
+        "nameEn": "Secret Access",
+        "author": "zhoujiannan-nb",
+        "version": "1.0.0",
+        "license": "MIT",
+        "description": "黑底开机的一个:红色 Mini Code 徽标先亮起来,然后「需要访问许可」「身份资料确认」一屏一屏走到「核验通过」才进软件,右下角有只红线描的电路猫陪着你,每一步有外国女声报读。全程约 16 秒,嫌慢就把速度调快,不想听声音就勾「静默」。",
+        "path": "boot-anim/mc-secret",
+        "entry": "index.html",
+        "preview": "preview.svg",
+        "durationMs": 16500,
+        "maxMs": 45000,
+        "colors": [
+          "dark"
+        ],
+        "interactive": false,
+        "minViewport": 480,
+        "tags": [
+          "开机",
+          "暗色",
+          "语音",
+          "音效",
+          "小猫"
+        ],
+        "options": {
+          "voice_lang": "en",
+          "mascot": "cat",
+          "access_password": "",
+          "brand1": "迷你代码",
+          "brand2": "MINI CODE  AGENT WORKBENCH",
+          "org_zh": "本地智能体工作台",
+          "org_en": "LOCAL AGENT WORKBENCH",
+          "org_sub": "效率高于一切",
+          "welcome_box": "MINI CODE",
+          "footer": "POWERED BY MINI CODE",
+          "require_interaction": 0
+        },
+        "files": [
+          {
+            "path": "boot-anim/mc-secret/boot.css",
+            "size": 42099,
+            "sha256": "e0af282afded0f623e525385e76173e71b0109a1464f2e6e21b103ada9469a68"
+          },
+          {
+            "path": "boot-anim/mc-secret/boot.js",
+            "size": 61544,
+            "sha256": "c3ce920f027f4e28debebac7e8ac603fbb71d7b233b0667eaafb80c07771e9d2"
+          },
+          {
+            "path": "boot-anim/mc-secret/index.html",
+            "size": 662,
+            "sha256": "99efd8ef7d27b594631ccf61be241fb492dfdc8f45635ff180a28dfb09673c71"
+          },
+          {
+            "path": "boot-anim/mc-secret/line-1.mp3",
+            "size": 41317,
+            "sha256": "ec3afe38d6df4664a8948b4046e4c124c534f27092e97dfc3948e11ff8212934"
+          },
+          {
+            "path": "boot-anim/mc-secret/line-2.mp3",
+            "size": 25121,
+            "sha256": "8d045168d150ff57c5f15af14644eaaba0d244694e3fae0ba31313a2c57c6d44"
+          },
+          {
+            "path": "boot-anim/mc-secret/line-3.mp3",
+            "size": 23554,
+            "sha256": "c490d5218f36f51680e9b9e02bdb6ca285ef0e0ca13f04c491a53e1308470680"
+          },
+          {
+            "path": "boot-anim/mc-secret/line-4.mp3",
+            "size": 25644,
+            "sha256": "bbfa0d757843451df6e7d306630bf582657dea36f2c4952bb2773496dd5d4637"
+          },
+          {
+            "path": "boot-anim/mc-secret/line-5.mp3",
+            "size": 36093,
+            "sha256": "97be9c44591af6f3ef0b7b8788f960e07df684e41236661dd9d2294639f2ae31"
+          },
+          {
+            "path": "boot-anim/mc-secret/line-cn-1.mp3",
+            "size": 25957,
+            "sha256": "3492839104177a01737a4e7343401b5cc1cbc31c7160b4262bcbca459fc31524"
+          },
+          {
+            "path": "boot-anim/mc-secret/line-cn-2.mp3",
+            "size": 23867,
+            "sha256": "44d23d32769d43f9c39b31333b5534685218e7d6492d29b37428e937f831a5ff"
+          },
+          {
+            "path": "boot-anim/mc-secret/line-cn-3.mp3",
+            "size": 22195,
+            "sha256": "fc7d715d24125e210d79d8785c53d871aee3a02e4df5ea66c0a0fe2bb0554282"
+          },
+          {
+            "path": "boot-anim/mc-secret/line-cn-4.mp3",
+            "size": 22195,
+            "sha256": "e0da2cf386d0cd0f785165aecb072b9a96b0ffc6830eb005f393f2ec742eb2ed"
+          },
+          {
+            "path": "boot-anim/mc-secret/line-cn-5.mp3",
+            "size": 30555,
+            "sha256": "07332875e4d7ea54cfda1b0d0c808a2cf6ec4a00e85614a03c4fae7bc79c2377"
+          },
+          {
+            "path": "boot-anim/mc-secret/preview.svg",
+            "size": 1201,
+            "sha256": "48d66791aff724bf3928169493a576e80fb2e95f301eda6397cf4b6df5c693b7"
+          },
+          {
+            "path": "boot-anim/mc-secret/sfx-tick.mp3",
+            "size": 2133,
+            "sha256": "4b808e21d8f4751d3ba20bfe58fc754b832694b48bf62b408b86a7a4a97e5804"
+          },
+          {
+            "path": "boot-anim/mc-secret/sfx-ticks-run.mp3",
+            "size": 10493,
+            "sha256": "6938b409be952fb60b1a56d2162effa2f631254d05a25fd69be76233a7f8dd9f"
+          },
+          {
+            "path": "boot-anim/mc-secret/theme.json",
+            "size": 1129,
+            "sha256": "ef8635a994108516b0b133e763c8bfed03e76d9627c4b72109af346ade5adcbf"
+          }
+        ]
+      },
+      {
         "id": "mc-tech-archive",
         "name": "技术档案",
         "nameEn": "Tech Archive",

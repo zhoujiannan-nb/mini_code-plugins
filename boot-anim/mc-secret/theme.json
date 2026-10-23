@@ -1,0 +1,38 @@
+{
+  "id": "mc-secret",
+  "name": "机密接入",
+  "nameEn": "Secret Access",
+  "author": "zhoujiannan-nb",
+  "version": "1.0.0",
+  "license": "MIT",
+  "entry": "index.html",
+  "preview": "preview.svg",
+  "description": "黑底开机的一个:红色 Mini Code 徽标先亮起来,然后「需要访问许可」「身份资料确认」一屏一屏走到「核验通过」才进软件,右下角有只红线描的电路猫陪着你,每一步有外国女声报读。全程约 16 秒,嫌慢就把速度调快,不想听声音就勾「静默」。",
+  "durationMs": 16500,
+  "maxMs": 45000,
+  "colors": [
+    "dark"
+  ],
+  "interactive": false,
+  "minViewport": 480,
+  "tags": [
+    "开机",
+    "暗色",
+    "语音",
+    "音效",
+    "小猫"
+  ],
+  "options": {
+    "voice_lang": "en",
+    "mascot": "cat",
+    "access_password": "",
+    "brand1": "迷你代码",
+    "brand2": "MINI CODE  AGENT WORKBENCH",
+    "org_zh": "本地智能体工作台",
+    "org_en": "LOCAL AGENT WORKBENCH",
+    "org_sub": "效率高于一切",
+    "welcome_box": "MINI CODE",
+    "footer": "POWERED BY MINI CODE",
+    "require_interaction": 0
+  }
+}

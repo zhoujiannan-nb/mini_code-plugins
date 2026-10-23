@@ -12,6 +12,7 @@ mini_code 的「配置 → 开机动画 → 在线获取」直接读本仓库根
 | 主题 | 时长 | 一句话 |
 |---|---|---|
 | [接入序列](boot-anim/mc-access/) `mc-access` | 17.8s | 复刻 dsh-startup-screen 的电影感序列：黑幕芯片标识 → 过曝洗白 → 五步接入（**真声女声播报** + 底噪 + 咔哒音效）→ 色散故障揭幕。品牌已是 Mini Code，终幕只念一声 `Welcome` |
+| [机密接入](boot-anim/mc-secret/) `mc-secret` | 16.5s | 暗色那一款：黑幕上亮起红色芯片徽标 → 暗底五步授权（**真声女声播报**，改 `voice_lang=cn` 换中文女声）→ 环形准星 → `WELCOME` 收尾，右下角一只自绘的红色「电路猫」陪跑 |
 | [技术档案](boot-anim/mc-tech-archive/) `mc-tech-archive` | 9.4s | 睁眼开场（瞳孔是终端光标）+ 品牌字距展开 + 「欢迎来到人类联盟」→ 环形准星 → 过曝洗白（带音效）→ 三步文字序列 → 色散故障揭幕。只有音效，没有人声 |
 | [极简终端](boot-anim/mc-minimal/) `mc-minimal` | 2.6s | 四行终端打字 + 扫描线 + `ready.`，嫌长就用这个（无声） |
 
@@ -61,6 +62,9 @@ python -m http.server 8700
   素材尾巴上挂着 0.1 ~ 2 秒不等的死空气，`boot.js` 里的 `TRIMS` 表把死空气削掉，
   不然每一步都要多等一两秒（整段从 23.4s 压到 17.8s）。
 
+**机密接入**带 10 句台词：`line-1..5.mp3`（英文女声）+ `line-cn-1..5.mp3`（中文女声），念哪套由 `theme.json` 里的 `voice_lang` 决定（`en` / `cn`）。
+宿主设置页没有这个开关 —— 想听中文就改本地目录 `~/.mini_code/boot-anim/mc-secret/theme.json`。这批素材上游已经切好首尾、尾巴上没有死空气，所以「机密接入」的 `TRIMS` 表是空的。
+
 终幕那句「欢迎 X 访问」里的 X 取宿主「配置 → 开机动画 → **身份名**」，没填就用主题
 默认值（哈基米指挥官）。
 
@@ -88,8 +92,10 @@ preview/                   宿主模拟器(本地预览用)
 docs/theme-contract.md     契约 v1
 tools/make_index.py        校验 + 生成 index.json
 tools/port_access.py       从上流仓库移植「接入序列」(带逐条补丁,可复现)
+tools/port_secret.py       从上流仓库移植「机密接入」(同样逐条补丁,可复现)
 tools/gen_audio.py         合成技术档案的音效
 LICENSE-DSH                上游 dsh-startup-screen 的 MIT 原文(接入序列是它的衍生作品)
+LICENSE-DSH-SECRET         上游 dsh-startup-secret 的 MIT 原文(机密接入是它的衍生作品)
 ```
 
 ## 致谢与来源
@@ -102,6 +108,15 @@ LICENSE-DSH                上游 dsh-startup-screen 的 MIT 原文(接入序列
   `fetch + decodeAudioData` 改成 `<audio>`（宿主的 `connect-src 'none'` 会拦 fetch）。
   上游 MIT 原文见 [LICENSE-DSH](LICENSE-DSH)，逐条改动见 `tools/port_access.py`
   与 `boot.js` 里的 `mini_code 补丁` 注释。
+- **机密接入** `mc-secret` 是 [dsh-startup-secret](https://github.com/huzhengcai471-crypto/dsh-startup-secret)
+  的**移植 + 改写**（MIT，© 2026 二次创作作者；它本身又是 dsh-startup-screen 的二次创作）：暗色底板、五步授权的节奏、真声播报与音效都来自那个项目。
+  上游自带的**人物立绘与徽章一个都没打包**（真人霓虹线稿 + 第三方标识，这些权利不在 MIT
+  授权范围内）：徽标换成与「接入序列」同一枚自绘「六边形芯片 + `>` 镂空」，立绘换成自绘的
+  红色「电路猫」线稿，原本挂在立绘上的三条动效（辉光呼吸 / 色彩呼吸 / 偶发信号错位）照旧；
+  动画演完才弹的「事件窗口」整条删掉（演完就该把界面交回来）；素材加载从内联 base64 改成
+  主题目录里的 mp3 + `<audio>`；浏览器合成音兜底全部移除。上游 MIT 原文见
+  [LICENSE-DSH-SECRET](LICENSE-DSH-SECRET)，逐条改动见 `tools/port_secret.py`（84 条补丁，
+  对不上就报错退出）。
 - **技术档案**、**极简终端**是本仓库原创，但分幕结构、"中文主字 + 英文等宽副标题逐字打出"、
   以及 **handoff 时机**（在淡出**开始**那一帧就通知宿主叠化，否则交界处会闪一下）这几处手法
   借鉴自 dsh-startup-screen 与 [dsh-chat-wallpaper](https://github.com/LeeRolling/dsh-chat-wallpaper)
@@ -113,5 +128,5 @@ LICENSE-DSH                上游 dsh-startup-screen 的 MIT 原文(接入序列
 ## 许可
 
 代码与画面实现：MIT — 见 [LICENSE](LICENSE)（接入序列的衍生作品部分另见
-[LICENSE-DSH](LICENSE-DSH)）。音频素材的版权不属于本仓库的 MIT 授权，见上一节。
+[LICENSE-DSH](LICENSE-DSH)，机密接入另见 [LICENSE-DSH-SECRET](LICENSE-DSH-SECRET)）。音频素材的版权不属于本仓库的 MIT 授权，见上一节。
 主题里请自己在 `theme.json` 的 `license` 字段署上作者。

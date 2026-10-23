@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 200">
+  <rect width="320" height="200" fill="#0b0b0c"/>
+  <g fill="none" stroke="#f2f1ee" stroke-width="1" opacity=".16">
+    <path d="M18 18h284v164H18z"/>
+    <path d="M36 40h248M36 54h248M36 68h180"/>
+  </g>
+  <path d="M160 48 L182 61 L182 87 L160 100 L138 87 L138 61 Z" fill="#c70000"/>
+  <path d="M164 62 L173 74 L164 86 L159 86 L167.5 74 L159 62 Z" fill="#0b0b0c"/>
+  <text x="160" y="126" font-family="Arial Narrow, sans-serif" font-size="13" fill="#f2f1ee" text-anchor="middle" letter-spacing="3">MINI CODE</text>
+  <text x="160" y="142" font-family="Consolas, monospace" font-size="7.5" fill="#ff3b30" text-anchor="middle" letter-spacing="1.5">SECRET ACCESS</text>
+  <g fill="none" stroke="#ff3b30" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M262 160 l6 -15 9 10M294 160 l-6 -15 -9 10"/>
+    <path d="M258 172c0-9 7-15 19-15s19 6 19 15-7 15-19 15-19-6-19-15z"/>
+    <path d="M269 171h5M281 171h5"/>
+    <path d="M255 168h-9M255 175h-9M296 168h9M296 175h9"/>
+  </g>
+  <rect x="36" y="176" width="180" height="3" fill="#3a0a0a"/>
+  <rect x="36" y="176" width="118" height="3" fill="#ff3b30"/>
+</svg>
