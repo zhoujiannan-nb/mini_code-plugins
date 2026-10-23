@@ -3,7 +3,7 @@
 一个主题 = `boot-anim/<id>/` 目录里的三个东西：
 
 ```
-boot-anim/mc-tech-archive/
+boot-anim/mc-access/
 ├── theme.json      必需：清单（宿主只读它，不猜目录结构）
 ├── index.html      必需：入口，自包含（可以另放 .css/.js/图片，用相对路径）
 └── preview.svg     建议：卡片缩略图（320×180，SVG 或 PNG）
