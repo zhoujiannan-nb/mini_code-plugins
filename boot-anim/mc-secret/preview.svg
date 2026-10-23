@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 200">
+  <rect width="320" height="200" fill="#0b0b0c"/>
+  <g fill="none" stroke="#f2f1ee" stroke-width="1" opacity=".16">
+    <path d="M18 18h284v164H18z"/>
+    <path d="M36 40h248M36 54h248M36 68h180"/>
+  </g>
+  <path d="M160 44 L182 57 L182 83 L160 96 L138 83 L138 57 Z" fill="#c70000"/>
+  <path d="M164 58 L173 70 L164 82 L159 82 L167.5 70 L159 58 Z" fill="#0b0b0c"/>
+  <text x="160" y="122" font-family="Arial Narrow, sans-serif" font-size="13" fill="#f2f1ee" text-anchor="middle" letter-spacing="3">MiniCode</text>
+  <text x="160" y="138" font-family="Consolas, monospace" font-size="7.5" fill="#ff3b30" text-anchor="middle" letter-spacing="1.5">SECRET ACCESS</text>
+  <g fill="none" stroke="#ff3b30" stroke-width="1.6" stroke-linecap="round" opacity=".85">
+    <circle cx="278" cy="150" r="12"/>
+    <path d="M258 184c2-14 10-20 20-20s18 6 20 20"/>
+  </g>
+  <g fill="none" stroke="#ff3b30" stroke-width="1.2" opacity=".5">
+    <path d="M248 138h14M248 146h8"/>
+  </g>
+  <rect x="36" y="176" width="180" height="3" fill="#3a0a0a"/>
+  <rect x="36" y="176" width="118" height="3" fill="#ff3b30"/>
+</svg>

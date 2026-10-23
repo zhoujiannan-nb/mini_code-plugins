@@ -58,7 +58,9 @@
     <label>速度 <input id="speed" type="range" min="0.35" max="3" step="0.05" value="1"><b id="spdv">1.00×</b></label>
     <label>身份名 <input id="name" size="10" placeholder="留空则不显示"></label>
     <label><input id="inter" type="checkbox"> interactive</label>
+    <label><input id="mute" type="checkbox"> 静默</label>
     <label><input id="darkbg" type="checkbox" checked> 深色底</label>
+    <label>额外参数 <input id="extra" size="26" placeholder="mascot=none&event_window=1"></label>
     <span id="stat">未播放</span>
   </div>
   <div id="stage" class="dark">
@@ -70,7 +72,7 @@
 (function () {
   "use strict";
   var stage = document.getElementById("stage"), log = document.getElementById("log");
-  var frame = null, watchdog = null, t0 = 0, cur = null;
+  var frame = null, watchdog = null, t0 = 0, cur = null, gen = 0;
 
   function say(t, cls) {
     var d = document.createElement("div");
@@ -85,7 +87,7 @@
       var el = document.createElement("div");
       el.className = "th";
       el.innerHTML = "<b>" + t.name + " " + t.version + "</b><span>" + (t.durationMs / 1000).toFixed(1) +
-        "s · " + t.colors.join("/") + "</span>" + (t.preview ? '<img src="../' + t.preview + '">' : "");
+        "s · " + t.colors.join("/") + "</span>" + (t.preview ? '<img src="../' + t.path + '/' + t.preview + '">' : "");
       el.onclick = function () {
         document.querySelectorAll(".th").forEach(function (x) { x.classList.remove("sel"); });
         el.classList.add("sel"); cur = t; play();
@@ -95,27 +97,51 @@
     say("载入 " + (idx.kinds["boot-anim"] || []).length + " 个主题");
   }).catch(function (e) { say("index.json 读取失败:" + e.message); });
 
+  // 主题自己在 theme.json 里声明的 options:真宿主会把它们逐个拼进 query,
+  // 预览也得照拼,否则 voice_lang / mascot / event_window 这些开关在预览里根本试不到。
+  function themeOptions(t) {
+    if (t._opts) return Promise.resolve(t._opts);
+    return fetch("../" + t.path + "/theme.json")
+      .then(function (r) { return r.ok ? r.json() : {}; })
+      .then(function (j) { t._opts = j.options || {}; return t._opts; })
+      .catch(function () { t._opts = {}; return t._opts; });
+  }
+
   function play() {
     if (!cur) return say("先选一个主题", "ev");
     stop();
-    var q = "?speed=" + document.getElementById("speed").value +
-            "&name=" + encodeURIComponent(document.getElementById("name").value || "") +
-            "&interactive=" + (document.getElementById("inter").checked ? 1 : 0);
-    frame = document.createElement("iframe");
-    frame.setAttribute("sandbox", "allow-scripts");
-  // 和真宿主一致:带语音的主题要有 autoplay 才可能在预览里出声
-  frame.setAttribute("allow", "autoplay");     // 和真宿主一致:不给 same-origin
-    frame.src = "../" + cur.path + "/" + cur.entry + q;
-    stage.appendChild(frame);
-    t0 = Date.now();
-    document.getElementById("stat").textContent = cur.name + " 播放中…";
-    say("play " + cur.id + q, "ev");
-    clearTimeout(watchdog);
-    watchdog = setTimeout(function () {
-      say("硬超时 " + cur.maxMs + "ms → 宿主强制收走", "ev"); stop();
-    }, cur.maxMs);
+    var my = ++gen;   // 取主题 options 是异步的,期间被点掉/停掉就别再建帧
+    themeOptions(cur).then(function (opts) {
+      if (my !== gen) return;
+      var q = "?speed=" + document.getElementById("speed").value +
+              "&name=" + encodeURIComponent(document.getElementById("name").value || "") +
+              "&interactive=" + (document.getElementById("inter").checked ? 1 : 0) +
+              "&mute=" + (document.getElementById("mute").checked ? 1 : 0);
+      var hostKeys = { speed: 1, name: 1, interactive: 1, mute: 1 };
+      Object.keys(opts).sort().forEach(function (k) {
+        if (hostKeys[k]) return;
+        q += "&" + encodeURIComponent(k) + "=" + encodeURIComponent(opts[k]);
+      });
+      // 手写的临时参数排在最后,和真宿主的拼法一致(同名键取第一个,所以不会重复)
+      var extra = (document.getElementById("extra").value || "").trim().replace(/^[-?\s]+/, "").replace(/^&+/, "");
+      if (extra) q += "&" + extra;
+      frame = document.createElement("iframe");
+      frame.setAttribute("sandbox", "allow-scripts");
+      // 和真宿主一致:带语音的主题要有 autoplay 才可能在预览里出声
+      frame.setAttribute("allow", "autoplay");     // 和真宿主一致:不给 same-origin
+      frame.src = "../" + cur.path + "/" + cur.entry + q;
+      stage.appendChild(frame);
+      t0 = Date.now();
+      document.getElementById("stat").textContent = cur.name + " 播放中…";
+      say("play " + cur.id + q, "ev");
+      clearTimeout(watchdog);
+      watchdog = setTimeout(function () {
+        say("硬超时 " + cur.maxMs + "ms → 宿主强制收走", "ev"); stop();
+      }, cur.maxMs);
+    });
   }
   function stop() {
+    gen++;
     clearTimeout(watchdog);
     if (frame) { frame.remove(); frame = null; }
     document.getElementById("stat").textContent = "已停止";
