@@ -355,6 +355,20 @@ html, body {
 }
 * { scrollbar-width: none; -ms-overflow-style: none; }
 ::-webkit-scrollbar { width: 0; height: 0; display: none; }
+
+/* 暗色底板再钉一遍:上面那套暗色 token 挂在 #mc-secret-root.dsu-dark 上,
+   万一这个类被摘掉(或被别的参数抢了先),画面也不会退成暖白板子。 */
+#mc-secret-root {
+  --dsu-bg: #0b0b0c;
+  --dsu-bg-2: #131315;
+  --dsu-ink: #f2f1ee;
+  --dsu-ink-soft: #cfcecb;
+  --dsu-muted: #85847f;
+  --dsu-hair: rgba(255, 255, 255, 0.18);
+  --dsu-hair-soft: rgba(255, 255, 255, 0.07);
+  --dsu-gold: #ffde00;
+  background: #000;
+}
 """
 
 INDEX_HTML = """<!doctype html>
@@ -446,7 +460,7 @@ def js_patches(src):
          "    requireInteraction: false,  /* mini_code 补丁:默认全自动播完;只有 require_interaction=1 才逐步等确认 */"),
         ("voiceLang",
          "    voiceLang: 'zh',            // zh | en（仅作真声素材缺失时的 TTS 兜底；自动（优先神经网络女声）-US 本体为内置真声）",
-         "    voiceLang: 'en',            /* mini_code 补丁:真声素材语种 en=line-1..5 / cn=line-cn-1..5(theme.json 的 voice_lang) */"),
+         "    voiceLang: 'cn',              /* mini_code 补丁:真声素材语种,'cn'=line-cn-1..5(默认) / 'en'=line-1..5 */"),
         ("voiceName",
          "    voiceName: '',            // '' = 自动（优先神经网络女声）-US（真声 line-1..6）/ 'zhixing-cn' = 智性少女音-CN（真声 line-cn-1..6）/ 'calmlady-jp' = 清冷优雅-日语（真声 line-jp-1..6）/ 'pessimistic-ru' = 清冷脆弱-俄语（真声 line-ru-1..6）/ 'announcer-kr' = 威严铿锵宣示-朝鲜语（真声 line-kr-1..6）\n",
          ""),
@@ -456,7 +470,7 @@ def js_patches(src):
          "    voiceSource: 'asset',       /* mini_code 补丁:只有真声素材一种来源,浏览器合成音已移除 */"),
         ("mascot",
          "    mascot: 0,                  // 右下角人物立绘编号（0-3 对应设置页，-1 = 空 / 不显示立绘）",
-         "    mascot: 'cat',              /* mini_code 补丁:立绘款式 'cat'=自绘电路猫 / 'none'=不显示 */"),
+         "    mascot: 'none',              /* mini_code 补丁:立绘款式 'cat'=自绘电路猫 / 'none'=不显示 */"),
         ("eventWindow",
          "    eventWindow: false,         // 降世事件窗口：默认关闭；开启后每次动画结束都弹出\n",
          ""),
@@ -486,7 +500,11 @@ def js_patches(src):
           r"    var mi = parseInt\(out\.mascot, 10\)\n[\s\S]*?    out\.showMascot = out\.mascot >= 0\n",
           "    /* mini_code 补丁:立绘只有自绘「电路猫」一款,除 'none' 外一律按猫处理 */\n"
           "    out.mascot = String(out.mascot).toLowerCase() === 'none' ? 'none' : 'cat'\n"
-          "    out.showMascot = out.mascot !== 'none'\n", regex=True)
+          "    out.showMascot = out.mascot !== 'none'\n"
+          "    /* mini_code 补丁:本主题就是「暗色那一款」,底板钉死暗色。上游留的 theme=light"
+"     暖白分支在 mini_code 里没有任何正经入口(宿主设置页只有 速度/身份名/静默/交互),"
+"     外部随便传个 theme=light 就会把画面退成一块发白的板子,所以不接受这个参数。 */\n"
+"    out.theme = 'dark'\n", regex=True)
 
     # ── 代号允许连字符:兜底身份编号 MC-000001 别被洗成 MC000001 ────────────
     s = P(s, "identityid-sanitize",
@@ -754,20 +772,20 @@ THEME_JSON = {
     "name": "机密接入",
     "nameEn": "Secret Access",
     "author": "zhoujiannan-nb",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "license": "MIT",
     "entry": "index.html",
     "preview": "preview.svg",
-    "description": "黑底开机的一个:红色 Mini Code 徽标先亮起来,然后「需要访问许可」「身份资料确认」一屏一屏走到「核验通过」才进软件,右下角有只红线描的电路猫陪着你,每一步有外国女声报读。全程约 16 秒,嫌慢就把速度调快,不想听声音就勾「静默」。",
-    "durationMs": 16500,
+    "description": "黑底开机的一个:红色 Mini Code 徽标先亮起来,然后「需要访问许可」「身份资料确认」一屏一屏走到「核验通过」才进软件,中间是中文女声一句句报读。全程约 17 秒,嫌慢就把速度调快,不想听声音就勾「静默」。",
+    "durationMs": 16700,
     "maxMs": 45000,
     "colors": ["dark"],
     "interactive": False,
     "minViewport": 480,
     "tags": ["开机", "暗色", "语音", "音效", "小猫"],
     "options": {
-        "voice_lang": "en",
-        "mascot": "cat",
+        "voice_lang": "cn",
+        "mascot": "none",
         "access_password": "",
         "brand1": "迷你代码",
         "brand2": "MINI CODE  AGENT WORKBENCH",
@@ -823,6 +841,13 @@ def main():
         js = js_patches(f.read())
     with open(os.path.join(lib, "splash.css"), encoding="utf-8") as f:
         css = css_patches(f.read())
+
+    # ── 自检:块注释必须成对。少写一个 */ 会把它后面几十行代码整段吞进注释里,
+    #    而 node --check 照样过(那就是一坨合法注释),所以只能自己拦下来。
+    for _name, _text in (("boot.js", js), ("boot.css", css)):
+        _o, _c = _text.count("/*"), _text.count("*/")
+        if _o != _c:
+            sys.exit("[FAIL] %s 块注释不成对: /* x%d, */ x%d —— 有补丁把注释写坏了" % (_name, _o, _c))
     with open(os.path.join(OUT, "boot.js"), "w", encoding="utf-8", newline="\n") as f:
         f.write(js)
     with open(os.path.join(OUT, "boot.css"), "w", encoding="utf-8", newline="\n") as f:

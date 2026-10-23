@@ -1329,3 +1329,17 @@ html, body {
 }
 * { scrollbar-width: none; -ms-overflow-style: none; }
 ::-webkit-scrollbar { width: 0; height: 0; display: none; }
+
+/* 暗色底板再钉一遍:上面那套暗色 token 挂在 #mc-secret-root.dsu-dark 上,
+   万一这个类被摘掉(或被别的参数抢了先),画面也不会退成暖白板子。 */
+#mc-secret-root {
+  --dsu-bg: #0b0b0c;
+  --dsu-bg-2: #131315;
+  --dsu-ink: #f2f1ee;
+  --dsu-ink-soft: #cfcecb;
+  --dsu-muted: #85847f;
+  --dsu-hair: rgba(255, 255, 255, 0.18);
+  --dsu-hair-soft: rgba(255, 255, 255, 0.07);
+  --dsu-gold: #ffde00;
+  background: #000;
+}

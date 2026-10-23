@@ -163,13 +163,13 @@
         "name": "机密接入",
         "nameEn": "Secret Access",
         "author": "zhoujiannan-nb",
-        "version": "1.0.0",
+        "version": "1.1.0",
         "license": "MIT",
-        "description": "黑底开机的一个:红色 Mini Code 徽标先亮起来,然后「需要访问许可」「身份资料确认」一屏一屏走到「核验通过」才进软件,右下角有只红线描的电路猫陪着你,每一步有外国女声报读。全程约 16 秒,嫌慢就把速度调快,不想听声音就勾「静默」。",
+        "description": "黑底开机的一个:红色 Mini Code 徽标先亮起来,然后「需要访问许可」「身份资料确认」一屏一屏走到「核验通过」才进软件,中间是中文女声一句句报读。全程约 17 秒,嫌慢就把速度调快,不想听声音就勾「静默」。",
         "path": "boot-anim/mc-secret",
         "entry": "index.html",
         "preview": "preview.svg",
-        "durationMs": 16500,
+        "durationMs": 16700,
         "maxMs": 45000,
         "colors": [
           "dark"
@@ -184,8 +184,8 @@
           "小猫"
         ],
         "options": {
-          "voice_lang": "en",
-          "mascot": "cat",
+          "voice_lang": "cn",
+          "mascot": "none",
           "access_password": "",
           "brand1": "迷你代码",
           "brand2": "MINI CODE  AGENT WORKBENCH",
@@ -199,13 +199,13 @@
         "files": [
           {
             "path": "boot-anim/mc-secret/boot.css",
-            "size": 42099,
-            "sha256": "e0af282afded0f623e525385e76173e71b0109a1464f2e6e21b103ada9469a68"
+            "size": 42554,
+            "sha256": "394ccbe28ca004d70dbe074959ae78a51965214172ac551b4e4a6bf8c15bc07c"
           },
           {
             "path": "boot-anim/mc-secret/boot.js",
-            "size": 61544,
-            "sha256": "c3ce920f027f4e28debebac7e8ac603fbb71d7b233b0667eaafb80c07771e9d2"
+            "size": 61887,
+            "sha256": "fdfc19cb15fac7914f1e1ed401b54d2a411505a8df92b9c138192c175223ab2a"
           },
           {
             "path": "boot-anim/mc-secret/index.html",
@@ -279,8 +279,8 @@
           },
           {
             "path": "boot-anim/mc-secret/theme.json",
-            "size": 1129,
-            "sha256": "ef8635a994108516b0b133e763c8bfed03e76d9627c4b72109af346ade5adcbf"
+            "size": 1090,
+            "sha256": "6ffc50a602f0b3209d8b11960228a1e2497eb0044b5c73e92a2272ce002b85e9"
           }
         ]
       },

@@ -85,7 +85,7 @@
     sound: true,                // 界面音效（WebAudio 合成，无音频文件）
     soundVolume: 0.5,
     voice: true,                // 女声播报
-    voiceLang: 'en',            /* mini_code 补丁:真声素材语种 en=line-1..5 / cn=line-cn-1..5(theme.json 的 voice_lang) */
+    voiceLang: 'cn',              /* mini_code 补丁:真声素材语种,'cn'=line-cn-1..5(默认) / 'en'=line-1..5 */
     voiceRate: 0.88,            // 电影旁白档：比朗读慢，字与字之间才有重量
     voicePitch: 0.85,           // 压低音调，深沉的 AI 女声
     voiceVolume: 1,   /* mini_code 补丁:<audio> 音量上限就是 1,默认给满 */
@@ -93,7 +93,7 @@
     sfx: 'audio',               // audio=真素材（用户音频里抠的音效）/ synth=现场合成
     voiceSource: 'asset',       /* mini_code 补丁:只有真声素材一种来源,浏览器合成音已移除 */
     voiceLead: 240,             // 提示音之后留一小段空白再开口
-    mascot: 'cat',              /* mini_code 补丁:立绘款式 'cat'=自绘电路猫 / 'none'=不显示 */
+    mascot: 'none',              /* mini_code 补丁:立绘款式 'cat'=自绘电路猫 / 'none'=不显示 */
     identity: '哈基米指挥官',    // ← mini_code 补丁:默认身份名(宿主 name= 参数优先)
     identityId: 'MC-000001',
     accessLevel: '最高权限',
@@ -264,6 +264,8 @@
     /* mini_code 补丁:立绘只有自绘「电路猫」一款,除 'none' 外一律按猫处理 */
     out.mascot = String(out.mascot).toLowerCase() === 'none' ? 'none' : 'cat'
     out.showMascot = out.mascot !== 'none'
+    /* mini_code 补丁:本主题就是「暗色那一款」,底板钉死暗色。上游留的 theme=light     暖白分支在 mini_code 里没有任何正经入口(宿主设置页只有 速度/身份名/静默/交互),     外部随便传个 theme=light 就会把画面退成一块发白的板子,所以不接受这个参数。 */
+    out.theme = 'dark'
     return out
   }
 
