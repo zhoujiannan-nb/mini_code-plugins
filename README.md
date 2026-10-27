@@ -2,7 +2,7 @@
 
 给 [mini_code](https://github.com/zhoujiannan-nb/mini_code) 用的公开插件仓库。
 
-现在这里有两类插件：
+现在这里有三类插件：
 
 - **外观插件**（`kind: appearance`，在 `boot-anim/`）——目前带的唯一能力是**开机动画**：
   一个 `plugin.json` 里写了 `boot` 块，宿主就把它当开机动画用。以后的外观主题（聊天底图、
@@ -10,9 +10,13 @@
 - **工具插件**（`kind: tool`，在 `tool/`）——往模型的工具列表**追加**工具，像网页搜索那样。
   真源是 `plugin.json` 里的 `tools[]`，参数走 **stdin**（不是命令行），实现在同目录的脚本里。
   见 [`tool/web-search/`](tool/web-search/)。
+- **进程插件**（`kind: process`，在 `process/`）——宿主负责把它的本地服务拉起、探活、重启、
+  关门，典型用途是给本机起一个 OpenAI 兼容的模型端点（见
+  [`process/qoder-gateway/`](process/qoder-gateway/)）。**这一类不往 prompt 里塞任何文本**，
+  所以对前缀缓存完全隐形；二进制随插件一起发（载荷形式），拉下来不用编译。
 
-两类的**目录写法不一样**，这是有意为之：`boot-anim/<id>/` 的真源是 `theme.json`
-（`plugin.json` 由它派生，别手改）；`tool/<id>/` 的真源就是 `plugin.json` 本身。
+这三类的**目录写法不一样**，这是有意为之：`boot-anim/<id>/` 的真源是 `theme.json`
+（`plugin.json` 由它派生，别手改）；`tool/<id>/` 与 `process/<id>/` 的真源就是 `plugin.json` 本身。
 
 装、选、换、删**全在 mini_code 的「配置 → 插件中心」里**：左边的列表是本地已装的，右边是
 仓库里的市场（进入页签自动拉一次）。装完之后点那一行的「**设为开机动画**」就生效，想先看看
@@ -37,6 +41,16 @@
 | 插件 | 给模型追加什么 | 一句话 |
 |---|---|---|
 | [网页搜索 / 正文读取](tool/web-search/) `web-search` | `web_search` / `web_read` / `web_search_multi` | 真实（无头）浏览器搜 bing/baidu/google/duckduckgo/zhihu，正文抽成 markdown。**要本机自备 `web_search` 项目 + playwright + chromium**，缺依赖时工具会返回一段写清楚去哪儿装的错误 |
+
+### 现有进程插件
+
+| 插件 | 给你什么 | 一句话 |
+|---|---|---|
+| [Qoder 网关](process/qoder-gateway/) `qoder-gateway` | `http://127.0.0.1:32999/v1`（OpenAI 兼容） | 把自己买的 Qoder 套餐变成本地 OpenAI 兼容 API：标准字段、原生 `tool_calls`、`reasoning_content`、真实 `cached_tokens` 前缀缓存命中。**二进制随插件发**（`qoder-gw.bin.json`：stripped exe → zlib → base64，3.8MB；宿主安装器不收 `.exe` 且单文件限 8MB），首次运行自动解到 `%LOCALAPPDATA%\Programs\QoderAPI\QoderAPI.exe` 并校验 sha256，**拉下来就能用、不用 Go 不用编译**。PAT 放 `~/.qoder-api/pat.txt`，客户端 key 放 `~/.qoder-api/key.txt`（没有就随机生成），凭据绝不进仓库 |
+
+进程插件的启停在**「配置 → 插件中心」**里（开始 / 停止 / 重启 / 看日志），装了 `autostart`
+就跟着 mini_code 一起起来；反过来 mini_code 没跑，那个端口也不会有人听。它用 `python gateway.py`
+启动，靠上游宿主注入的 `MINICODE_PLUGIN_DIR` 找自己的文件，**只监听 127.0.0.1**。
 
 ### 装、选、开
 
@@ -193,6 +207,7 @@ index.json                 机器读清单(tools/make_plugins.py 生成,别手�
                              kinds.boot-anim  = 老宿主的兼容别名(内容一样,少个 category)
                                 ⚠ 同一个 id 会同时出现在两个桶里。新宿主按 id 去重,
                                   只列一张卡;别在别的桶里重挂同一个 id 来"多露一次脸"
+                             kinds.tool / kinds.process = 另外两类(各自独立成桶,不会重复)
 boot-anim/<id>/            外观插件(目前这一类只含开机动画)
   plugin.json                宿主认的清单:kind=appearance + boot 块(派生文件,别手改)
   theme.json                 动画自己的清单:入口/时长/options(真源)
@@ -200,6 +215,10 @@ boot-anim/<id>/            外观插件(目前这一类只含开机动画)
 tool/<id>/                 工具插件(第二类)：**plugin.json 就是真源**，没有 theme.json
   plugin.json                kind=tool + tools[]（name/description/parameters/command/args/timeout_seconds）
   adapter.py / config.json   工具的实现与它的配置（参数从 **stdin** 进来，不是命令行）
+process/<id>/              进程插件(第三类)：**plugin.json 就是真源**，宿主托管一个本地子进程
+  plugin.json                kind=process + process{command/args/autostart/restart/ready_timeout_seconds/health_check/expose}
+  gateway.py                 启动器（也可换成任何能读 MINICODE_PLUGIN_DIR 的脚本）
+  *.bin.json                 二进制载荷（宿主不收 .exe；常见做法 strip → zlib → base64，运行期校验 sha256 再解出）
 preview/                   宿主模拟器(本地预览用)
 docs/theme-contract.md     契约 v1
 tools/make_plugins.py      校验 theme.json → 生成 plugin.json + index.json(**主要用这个**)

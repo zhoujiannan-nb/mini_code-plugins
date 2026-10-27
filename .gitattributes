@@ -1,0 +1,4 @@
+# index.json 里给每个文件记了 sha256，宿主安装时按字节校验。
+# Windows 上 core.autocrlf=true 的克隆会把 LF 换成 CRLF，校验就会对不上，
+# 所以这里统一关掉换行转换：仓库里存什么字节，检出来就是什么字节。
+* -text

@@ -569,6 +569,49 @@
         ]
       }
     ],
+    "process": [
+      {
+        "id": "qoder-gateway",
+        "name": "Qoder 网关（本地 OpenAI 兼容中转）",
+        "nameEn": "",
+        "author": "flycat666",
+        "version": "1.0.0",
+        "license": "MIT",
+        "description": "把 Qoder 套餐暴露成本地 OpenAI 兼容 API（base_url http://127.0.0.1:32999/v1）。网关二进制随插件一起发（qoder-gw.bin.json：stripped exe 经 zlib+base64，3.8MB，宿主安装器不收 .exe 且单文件限 8MB），首次运行自动解到 %LOCALAPPDATA%\\Programs\\QoderAPI\\QoderAPI.exe 并按清单 sha256 校验，拉下来就能用、不用编译。凭据一律不在仓库里：PAT 读 ~/.qoder-api/pat.txt，客户端 key 读 ~/.qoder-api/key.txt（没有就随机生成）。",
+        "path": "process/qoder-gateway",
+        "category": "process",
+        "tags": [],
+        "tools": [],
+        "requires": "Python 3.8+（启动器）+ 自己的 Qoder PAT（放 ~/.qoder-api/pat.txt）。二进制已随插件附带，无需 Go、无需编译。",
+        "files": [
+          {
+            "path": "process/qoder-gateway/README.md",
+            "size": 4650,
+            "sha256": "b3764bd21cdd6c9fef90c89af99fc36d9e1f1e85c22c35bba1875d244ee87162"
+          },
+          {
+            "path": "process/qoder-gateway/gateway.py",
+            "size": 10070,
+            "sha256": "826981772902b659ff08cd289b0fc15ce2730777d04673c27ae84b92a6670c01"
+          },
+          {
+            "path": "process/qoder-gateway/plugin.json",
+            "size": 1575,
+            "sha256": "c5fe4638cfb831d5701c9b11d7ac7b0d791e538a2469144ef87e87b89795a52e"
+          },
+          {
+            "path": "process/qoder-gateway/qoder-gw.bin.json",
+            "size": 3986808,
+            "sha256": "160abf286891171f6f2ce3bfd2f165780b6763a014a061b987b45471ac251380"
+          },
+          {
+            "path": "process/qoder-gateway/qoder-gw.example.json",
+            "size": 151,
+            "sha256": "c851e324d82d75eddad5aef48c89922e9558e671dce136d09bf856d171fc00ee"
+          }
+        ]
+      }
+    ],
     "tool": [
       {
         "id": "web-search",

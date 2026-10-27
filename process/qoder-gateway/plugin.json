@@ -1,0 +1,26 @@
+{
+  "id": "qoder-gateway",
+  "name": "Qoder 网关（本地 OpenAI 兼容中转）",
+  "version": "1.0.0",
+  "author": "flycat666",
+  "kind": "process",
+  "description": "把 Qoder 套餐暴露成本地 OpenAI 兼容 API（base_url http://127.0.0.1:32999/v1）。网关二进制随插件一起发（qoder-gw.bin.json：stripped exe 经 zlib+base64，3.8MB，宿主安装器不收 .exe 且单文件限 8MB），首次运行自动解到 %LOCALAPPDATA%\\Programs\\QoderAPI\\QoderAPI.exe 并按清单 sha256 校验，拉下来就能用、不用编译。凭据一律不在仓库里：PAT 读 ~/.qoder-api/pat.txt，客户端 key 读 ~/.qoder-api/key.txt（没有就随机生成）。",
+  "enabled": true,
+  "requires": "Python 3.8+（启动器）+ 自己的 Qoder PAT（放 ~/.qoder-api/pat.txt）。二进制已随插件附带，无需 Go、无需编译。",
+  "process": {
+    "command": "python",
+    "args": ["gateway.py"],
+    "autostart": true,
+    "restart": "on-failure",
+    "ready_timeout_seconds": 40,
+    "health_check": {
+      "type": "http",
+      "url": "http://127.0.0.1:32999/health"
+    },
+    "expose": {
+      "tool": false,
+      "endpoint": "http://127.0.0.1:32999/v1"
+    },
+    "description": "Qoder → OpenAI 兼容网关，只监听 127.0.0.1。/health 免鉴权可查状态；/v1 需要 ~/.qoder-api/key.txt 里的 key。把 expose.tool 改成 true 会给模型追加一个 plugin_proc__qoder-gateway 控制工具（追加在核心工具之后，核心前缀缓存不动，但会改变当前会话的 tools 数组，建议空闲时再开）。"
+  }
+}
