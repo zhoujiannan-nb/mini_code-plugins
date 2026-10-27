@@ -168,6 +168,9 @@ mac_launcher_sim.py     -> PASS (17/17)   main() 的参数拼接、看守→接�
 index_entry_check.py    -> PASS (28/28)   两个网关各自按宿主规则逐项校验
 remote_verify_macos.py  -> PASS           走 raw 下载链路，7 个文件 size+sha256 全一致，
                                           两个载荷解开后 arm64 signed=True / amd64 signed=False
+macos_install_sim.py    -> PASS (18/18)   「用户刚装好」视角：从 raw 下到干净目录，
+                                          按下载到的 gateway.py 自己解载荷、核架构与签名、
+                                          验 run.sh、验清单入口、验非 macOS 的退出码 4
 ```
 
 > 这台机器没有苹果设备，所以**没有做过真机启动**。设计上尽量把风险压到"能自查"：
