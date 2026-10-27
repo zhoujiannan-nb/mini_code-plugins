@@ -94,3 +94,7 @@ python tools/make_plugins.py     # 校验扩展名/大小/semver，把 kinds.pro
 ```
 
 实测：5 个文件、合计 3.9MB，全部通过宿主的下载白名单与大小上限，`kinds.process[qoder-gateway]` 正常生成，sha256 清单逐文件核对一致。
+
+**已发布**（2026-10-27，`mini_code-plugins` 的 `5f7204b`）：从 `raw.githubusercontent.com/zhoujiannan-nb/mini_code-plugins/main/` 把 index.json 与这 5 个文件真下载回来，逐个比对 size + sha256 全部一致，载荷解开后的 exe 也复核过（7,197,696 B，sha256 `627edbf8…`）。插件中心 `GET /api/plugins/catalog` 里已经能看到它（`kind=process`、`files=5`、`installed=true`）。
+
+> 仓库里那个 `.gitattributes`（`* -text`）别删：`index.json` 逐文件记 sha256、宿主按**字节**校验，而 Windows 上 `core.autocrlf=true` 的克隆会把 LF 换成 CRLF，一换就校验失败。关掉换行转换，仓库存什么字节、检出来就是什么字节。
