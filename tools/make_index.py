@@ -129,31 +129,49 @@ def main():
     target = os.path.join(ROOT, "index.json")
 
     if "--check" in sys.argv:
-        # 只比对不写盘:改过主题文件却忘了重新生成 index.json 时,这里就会红。
+        # 只比对不写盘:改过插件文件却忘了重新生成 index.json 时,这里就会红。
         # (宿主安装是按 index.json 里的 sha256 校验的,索引过期 = 装不上。)
+        # 比对的是 make_plugins.build_index() 的**全量**结果 —— 只扫 boot-anim 会把
+        # tool/ 这些别的桶误判成"索引里多出来了"。
+        try:
+            import make_plugins
+        except ImportError:
+            _s = sys
+            _s.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+            import make_plugins
         try:
             cur = json.loads(io.open(target, encoding="utf-8").read())
         except Exception as e:
             print(u"[FAIL] 读不到 index.json: %s" % e)
             return 1
-        old, new = _flat_files(cur), _flat_files(data)
+        try:
+            fresh = make_plugins.build_index()
+        except SystemExit as e:
+            print(u"[FAIL] 校验没过,退出码 %s" % e)
+            return 1
+        old, new = _flat_files(cur), _flat_files(fresh)
         bad = sorted(p for p in set(old) | set(new) if old.get(p) != new.get(p))
         if bad:
             for p in bad:
-                print(u"[FAIL] index.json 与主题文件不一致: %s" % p)
-            print(u"       跑一次 python tools/make_index.py 再提交。")
+                print(u"[FAIL] index.json 与插件文件不一致: %s" % p)
+            print(u"       跑一次 python tools/make_plugins.py 再提交。")
             return 1
-        print(u"[OK] index.json 与主题文件一致(%d 个文件)" % len(new))
+        buckets = sorted(fresh["kinds"])
+        print(u"[OK] index.json 与插件文件一致(%d 个文件, %d 个桶: %s)"
+              % (len(new), len(buckets), ", ".join(buckets)))
         return 0
 
-    with io.open(target, "w", encoding="utf-8", newline="\n") as f:
-        f.write(json.dumps(data, ensure_ascii=False, indent=2) + "\n")
-    total = sum(len(v) for v in out.values())
-    print(u"[OK] index.json 已生成: %d 类 %d 个主题" % (len(out), total))
-    for kind, items in out.items():
-        for it in items:
-            print(u"     %-10s %-14s %s (%.1fs, %d 个文件)" % (kind, it["id"], it["name"], it["durationMs"] / 1000.0, len(it["files"])))
-    return 0
+    # 写盘这条路委托给 make_plugins.py:它除了 index.json 还要派生 plugin.json,
+    # 而且 index.json 里必须有 kinds.appearance(插件中心读的那一桶)。这里再写一遍
+    # 会把那一桶写丢 —— 所以只有一个写入口。
+    try:
+        import make_plugins
+    except ImportError:
+        import sys as _s
+        _s.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        import make_plugins
+    print(u"[提示] 写 index.json 由 tools/make_plugins.py 负责(顺带生成 plugin.json)。")
+    return make_plugins.main()
 
 
 if __name__ == "__main__":
