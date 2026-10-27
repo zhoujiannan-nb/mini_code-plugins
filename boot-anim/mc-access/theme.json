@@ -7,7 +7,7 @@
   "license": "MIT",
   "entry": "index.html",
   "preview": "preview.svg",
-  "description": "最有大片感的一个:黑屏亮起 Mini Code 的标志,一屏一屏走到进软件,中间有个外国女声在念操作提示,最后说一声 Welcome。全程约 18 秒,嫌慢就把速度调快,不想听声音就勾「静默」。",
+  "description": "最有大片感的一个:黑屏亮起 Mini Code 的标志,一屏一屏走到进软件,中间有个女声在念操作提示,最后说一声 Welcome。全程约 18 秒,不想听声音就勾「静默」。",
   "durationMs": 17800,
   "maxMs": 40000,
   "colors": [

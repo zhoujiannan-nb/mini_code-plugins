@@ -3,6 +3,290 @@
   "repo": "https://github.com/zhoujiannan-nb/mini_code-plugins",
   "ref": "main",
   "kinds": {
+    "appearance": [
+      {
+        "id": "mc-access",
+        "name": "接入序列",
+        "nameEn": "Access Sequence",
+        "author": "zhoujiannan-nb",
+        "version": "1.0.1",
+        "license": "MIT",
+        "description": "最有大片感的一个:黑屏亮起 Mini Code 的标志,一屏一屏走到进软件,中间有个女声在念操作提示,最后说一声 Welcome。全程约 18 秒,不想听声音就勾「静默」。",
+        "path": "boot-anim/mc-access",
+        "entry": "index.html",
+        "preview": "preview.svg",
+        "durationMs": 17800,
+        "maxMs": 40000,
+        "colors": [
+          "light",
+          "dark"
+        ],
+        "interactive": false,
+        "minViewport": 480,
+        "tags": [
+          "开机",
+          "电影感",
+          "语音",
+          "音效",
+          "复刻"
+        ],
+        "options": {
+          "speed": 1,
+          "theme": "light",
+          "accent": "#ff7500",
+          "brand": "MINI CODE",
+          "slogan": "LOCAL AGENT WORKBENCH",
+          "orgzh": "迷你代码",
+          "org": "MINI CODE",
+          "orgsub": "MINI CODE AGENT",
+          "welcome": "MINI CODE",
+          "footer": "POWERED BY MINI CODE",
+          "require_interaction": 0
+        },
+        "category": "appearance",
+        "files": [
+          {
+            "path": "boot-anim/mc-access/boot.css",
+            "size": 34394,
+            "sha256": "26dea74ab8f8957703a6ef9011315915a0bce2bac0ba8ae2d432c3a9e45960ba"
+          },
+          {
+            "path": "boot-anim/mc-access/boot.js",
+            "size": 63974,
+            "sha256": "ddc0ba76969336d3bd7d773d4a229acd4b784653d2df64d34a8368be8d60bae6"
+          },
+          {
+            "path": "boot-anim/mc-access/index.html",
+            "size": 582,
+            "sha256": "e369afc53478b1a0981e2b1bed8fac89f4ca52547492f3e65c789afac0019952"
+          },
+          {
+            "path": "boot-anim/mc-access/line-1.mp3",
+            "size": 234924,
+            "sha256": "d1f5e1b97597a87fd9233b43bc53ea9b29cc84bdf167336fc222bb04b8f36863"
+          },
+          {
+            "path": "boot-anim/mc-access/line-2.mp3",
+            "size": 208044,
+            "sha256": "1e633ecc55ffc8d3f0557173565e67db55aa6af6663266ab917c994ae7db9c28"
+          },
+          {
+            "path": "boot-anim/mc-access/line-3.mp3",
+            "size": 92204,
+            "sha256": "7e2ad8c521be7970a446ed596d98faf6c23de97042d6cc981e160df7bd84738b"
+          },
+          {
+            "path": "boot-anim/mc-access/line-4.mp3",
+            "size": 69804,
+            "sha256": "63982f97e896cf166f9812bce64790c5b1db12ccfd352c8f7e46874257f39a8d"
+          },
+          {
+            "path": "boot-anim/mc-access/line-5.mp3",
+            "size": 176044,
+            "sha256": "b8d28aee8cdd3593df655df3d5d558cee267815179f2e69345841fa619f71a35"
+          },
+          {
+            "path": "boot-anim/mc-access/line-6.mp3",
+            "size": 275400,
+            "sha256": "9f2017a056f53692225e732d252e4e6e5a27d90be0afe966b97784b27427cfc5"
+          },
+          {
+            "path": "boot-anim/mc-access/plugin.json",
+            "size": 620,
+            "sha256": "45268e9b72734ff2b9fb5327d553de37c04c6bd20f2db15fa7962f58158f34e0"
+          },
+          {
+            "path": "boot-anim/mc-access/preview.svg",
+            "size": 756,
+            "sha256": "a2caa04c0c2ca57ba74be2ab2f2dd59ceab12925e2830fb1c8593a74481113ea"
+          },
+          {
+            "path": "boot-anim/mc-access/sfx-tick.mp3",
+            "size": 2133,
+            "sha256": "4b808e21d8f4751d3ba20bfe58fc754b832694b48bf62b408b86a7a4a97e5804"
+          },
+          {
+            "path": "boot-anim/mc-access/sfx-ticks-run.mp3",
+            "size": 10493,
+            "sha256": "6938b409be952fb60b1a56d2162effa2f631254d05a25fd69be76233a7f8dd9f"
+          },
+          {
+            "path": "boot-anim/mc-access/theme.json",
+            "size": 977,
+            "sha256": "089e50bf27920b92e8a6b2cc228225e062a619aa376115904972cc7417f67545"
+          }
+        ]
+      },
+      {
+        "id": "mc-secret",
+        "name": "机密接入",
+        "nameEn": "Secret Access",
+        "author": "zhoujiannan-nb",
+        "version": "2.0.0",
+        "license": "MIT",
+        "description": "黑底开机的一个:红色徽标先亮起来,然后「需要访问许可」「身份资料确认」一屏一屏走到「核验通过」才进软件,中间是中文女声一句句报读,右下角有人物立绘。全程约 17 秒,不想听声音就勾「静默」,不想看立绘就把 options 里的 mascot 改成 none。",
+        "path": "boot-anim/mc-secret",
+        "entry": "index.html",
+        "preview": "preview.svg",
+        "durationMs": 17000,
+        "maxMs": 30000,
+        "colors": [
+          "dark"
+        ],
+        "interactive": false,
+        "minViewport": 480,
+        "tags": [
+          "开机",
+          "暗色",
+          "语音",
+          "音效",
+          "立绘"
+        ],
+        "options": {
+          "voice_lang": "cn",
+          "mascot": "0",
+          "event_window": "0",
+          "access_password": "",
+          "brand1": "迷你联盟",
+          "brand2": "MiniCode  AGENT WORKBENCH",
+          "brand3a": "迎接最高智能降临",
+          "org_zh": "迷你联盟",
+          "org_en": "MiniCode",
+          "org_sub": "效率高于一切",
+          "welcome_box": "MiniCode",
+          "footer": "POWERED BY MiniCode",
+          "require_interaction": "0"
+        },
+        "category": "appearance",
+        "files": [
+          {
+            "path": "boot-anim/mc-secret/boot.css",
+            "size": 46517,
+            "sha256": "eb942af61b196862e28e350b55e227283419c5d8671907ebc390dd2361ed3d97"
+          },
+          {
+            "path": "boot-anim/mc-secret/boot.js",
+            "size": 70307,
+            "sha256": "bf874f82b52c06e257da2ede38ffd88c8263af3ace3e6713585e913b1df1ddff"
+          },
+          {
+            "path": "boot-anim/mc-secret/emblem.png",
+            "size": 117523,
+            "sha256": "8f7adbe5e771981264afe3fe27a4f47ceeb4f2fd30c1653a489f95dd8b2fd835"
+          },
+          {
+            "path": "boot-anim/mc-secret/event.webp",
+            "size": 137496,
+            "sha256": "d641622b25247be2f60a898646e0e09be247b8b132151053d5e2f212a960651a"
+          },
+          {
+            "path": "boot-anim/mc-secret/index.html",
+            "size": 777,
+            "sha256": "802047c8e4989948566df62dde81e2f7bfeb101451ab3f981ef42442b2d01b99"
+          },
+          {
+            "path": "boot-anim/mc-secret/line-1.mp3",
+            "size": 41317,
+            "sha256": "ec3afe38d6df4664a8948b4046e4c124c534f27092e97dfc3948e11ff8212934"
+          },
+          {
+            "path": "boot-anim/mc-secret/line-2.mp3",
+            "size": 25121,
+            "sha256": "8d045168d150ff57c5f15af14644eaaba0d244694e3fae0ba31313a2c57c6d44"
+          },
+          {
+            "path": "boot-anim/mc-secret/line-3.mp3",
+            "size": 23554,
+            "sha256": "c490d5218f36f51680e9b9e02bdb6ca285ef0e0ca13f04c491a53e1308470680"
+          },
+          {
+            "path": "boot-anim/mc-secret/line-4.mp3",
+            "size": 25644,
+            "sha256": "bbfa0d757843451df6e7d306630bf582657dea36f2c4952bb2773496dd5d4637"
+          },
+          {
+            "path": "boot-anim/mc-secret/line-5.mp3",
+            "size": 36093,
+            "sha256": "97be9c44591af6f3ef0b7b8788f960e07df684e41236661dd9d2294639f2ae31"
+          },
+          {
+            "path": "boot-anim/mc-secret/line-cn-1.mp3",
+            "size": 25957,
+            "sha256": "3492839104177a01737a4e7343401b5cc1cbc31c7160b4262bcbca459fc31524"
+          },
+          {
+            "path": "boot-anim/mc-secret/line-cn-2.mp3",
+            "size": 23867,
+            "sha256": "44d23d32769d43f9c39b31333b5534685218e7d6492d29b37428e937f831a5ff"
+          },
+          {
+            "path": "boot-anim/mc-secret/line-cn-3.mp3",
+            "size": 22195,
+            "sha256": "fc7d715d24125e210d79d8785c53d871aee3a02e4df5ea66c0a0fe2bb0554282"
+          },
+          {
+            "path": "boot-anim/mc-secret/line-cn-4.mp3",
+            "size": 22195,
+            "sha256": "e0da2cf386d0cd0f785165aecb072b9a96b0ffc6830eb005f393f2ec742eb2ed"
+          },
+          {
+            "path": "boot-anim/mc-secret/line-cn-5.mp3",
+            "size": 30555,
+            "sha256": "07332875e4d7ea54cfda1b0d0c808a2cf6ec4a00e85614a03c4fae7bc79c2377"
+          },
+          {
+            "path": "boot-anim/mc-secret/mascot-0.webp",
+            "size": 261852,
+            "sha256": "1c9cf78764dd9afd93c7ab5e6aa7af9ed3583d4fc123dee90ffa9dd3e7a23998"
+          },
+          {
+            "path": "boot-anim/mc-secret/mascot-1.webp",
+            "size": 221506,
+            "sha256": "db140fc8b0ecf5f409c3cf7e0380a83fbd672d67cb32729eb01ce777971fde49"
+          },
+          {
+            "path": "boot-anim/mc-secret/mascot-2.webp",
+            "size": 197660,
+            "sha256": "46ee820a1d66859a6ee9fca1a09b4f226aa170d75781ba912267f1f0ea4bbd9f"
+          },
+          {
+            "path": "boot-anim/mc-secret/mascot-3.webp",
+            "size": 185960,
+            "sha256": "1b7baafbbeb851de8098f53b19b17e433124c624c4735e5925f6b0377c71a460"
+          },
+          {
+            "path": "boot-anim/mc-secret/mascot-4.webp",
+            "size": 238834,
+            "sha256": "5b2bb0d1be6246c3d4b34d0e09a8f75e9b8dacd04fd3bd835575427af787b07e"
+          },
+          {
+            "path": "boot-anim/mc-secret/plugin.json",
+            "size": 738,
+            "sha256": "aa3487c7e3c92f1330f675074980df3646c4e49062e7c1e01fc1911a1873990b"
+          },
+          {
+            "path": "boot-anim/mc-secret/preview.svg",
+            "size": 1164,
+            "sha256": "72a1636f2a615caa4b54d0e33dd6badb1efb6c8f49fa2a55ed751f7cc8c19a71"
+          },
+          {
+            "path": "boot-anim/mc-secret/sfx-tick.mp3",
+            "size": 2133,
+            "sha256": "4b808e21d8f4751d3ba20bfe58fc754b832694b48bf62b408b86a7a4a97e5804"
+          },
+          {
+            "path": "boot-anim/mc-secret/sfx-ticks-run.mp3",
+            "size": 10493,
+            "sha256": "6938b409be952fb60b1a56d2162effa2f631254d05a25fd69be76233a7f8dd9f"
+          },
+          {
+            "path": "boot-anim/mc-secret/theme.json",
+            "size": 1174,
+            "sha256": "29a4d35d561df9593326bfe1919ca96ed982e5ea21ec23cf0cd57d0e0fd587dc"
+          }
+        ]
+      }
+    ],
     "boot-anim": [
       {
         "id": "mc-access",
@@ -11,7 +295,7 @@
         "author": "zhoujiannan-nb",
         "version": "1.0.1",
         "license": "MIT",
-        "description": "最有大片感的一个:黑屏亮起 Mini Code 的标志,一屏一屏走到进软件,中间有个外国女声在念操作提示,最后说一声 Welcome。全程约 18 秒,嫌慢就把速度调快,不想听声音就勾「静默」。",
+        "description": "最有大片感的一个:黑屏亮起 Mini Code 的标志,一屏一屏走到进软件,中间有个女声在念操作提示,最后说一声 Welcome。全程约 18 秒,不想听声音就勾「静默」。",
         "path": "boot-anim/mc-access",
         "entry": "index.html",
         "preview": "preview.svg",
@@ -90,6 +374,11 @@
             "sha256": "9f2017a056f53692225e732d252e4e6e5a27d90be0afe966b97784b27427cfc5"
           },
           {
+            "path": "boot-anim/mc-access/plugin.json",
+            "size": 620,
+            "sha256": "45268e9b72734ff2b9fb5327d553de37c04c6bd20f2db15fa7962f58158f34e0"
+          },
+          {
             "path": "boot-anim/mc-access/preview.svg",
             "size": 756,
             "sha256": "a2caa04c0c2ca57ba74be2ab2f2dd59ceab12925e2830fb1c8593a74481113ea"
@@ -106,8 +395,8 @@
           },
           {
             "path": "boot-anim/mc-access/theme.json",
-            "size": 1008,
-            "sha256": "44481b2b41f63d8bc7f922b48c3e13dad31abfa24aee52c247ae14fc16b3a325"
+            "size": 977,
+            "sha256": "089e50bf27920b92e8a6b2cc228225e062a619aa376115904972cc7417f67545"
           }
         ]
       },
@@ -118,7 +407,7 @@
         "author": "zhoujiannan-nb",
         "version": "2.0.0",
         "license": "MIT",
-        "description": "黑底开机的一个:红色徽标先亮起来,然后「需要访问许可」「身份资料确认」一屏一屏走到「核验通过」才进软件,中间是中文女声一句句报读,右下角有人物立绘。全程约 17 秒,嫌慢就把速度调快,不想听声音就勾「静默」,不想看立绘就把 options 里的 mascot 改成 none。",
+        "description": "黑底开机的一个:红色徽标先亮起来,然后「需要访问许可」「身份资料确认」一屏一屏走到「核验通过」才进软件,中间是中文女声一句句报读,右下角有人物立绘。全程约 17 秒,不想听声音就勾「静默」,不想看立绘就把 options 里的 mascot 改成 none。",
         "path": "boot-anim/mc-secret",
         "entry": "index.html",
         "preview": "preview.svg",
@@ -253,6 +542,11 @@
             "sha256": "5b2bb0d1be6246c3d4b34d0e09a8f75e9b8dacd04fd3bd835575427af787b07e"
           },
           {
+            "path": "boot-anim/mc-secret/plugin.json",
+            "size": 738,
+            "sha256": "aa3487c7e3c92f1330f675074980df3646c4e49062e7c1e01fc1911a1873990b"
+          },
+          {
             "path": "boot-anim/mc-secret/preview.svg",
             "size": 1164,
             "sha256": "72a1636f2a615caa4b54d0e33dd6badb1efb6c8f49fa2a55ed751f7cc8c19a71"
@@ -269,8 +563,50 @@
           },
           {
             "path": "boot-anim/mc-secret/theme.json",
-            "size": 1199,
-            "sha256": "299a329a6475841df1b60d4a0a97de4daaded8ef7e926be0726ee06a503d22af"
+            "size": 1174,
+            "sha256": "29a4d35d561df9593326bfe1919ca96ed982e5ea21ec23cf0cd57d0e0fd587dc"
+          }
+        ]
+      }
+    ],
+    "tool": [
+      {
+        "id": "web-search",
+        "name": "网页搜索 / 正文读取",
+        "nameEn": "",
+        "author": "flycat666",
+        "version": "1.0.0",
+        "license": "MIT",
+        "description": "给模型追加 web_search / web_read / web_search_multi 三个工具：用真实（无头）浏览器搜五个搜索引擎（bing/baidu/google/duckduckgo/zhihu），并把网页正文抽成 markdown。依赖本机的 web_search 项目 + playwright + chromium，见同目录 README.md。",
+        "path": "tool/web-search",
+        "category": "tool",
+        "tags": [],
+        "tools": [
+          "web_search",
+          "web_read",
+          "web_search_multi"
+        ],
+        "requires": "",
+        "files": [
+          {
+            "path": "tool/web-search/README.md",
+            "size": 4927,
+            "sha256": "24d04e771c95d06d298d1c4fa08da22739f6d26b94729bb225933addd9b09fb6"
+          },
+          {
+            "path": "tool/web-search/adapter.py",
+            "size": 10333,
+            "sha256": "81cbb23be78fb65c326ac3c2f616861538a932ffb539a9a64105a8f0238000a3"
+          },
+          {
+            "path": "tool/web-search/config.json",
+            "size": 54,
+            "sha256": "adf0841c98c0cec494a11493b9cefb5e6420b1063bf79d3fa2ed82884521be79"
+          },
+          {
+            "path": "tool/web-search/plugin.json",
+            "size": 6458,
+            "sha256": "e744f6e20a82f77c08b70c05d676e42ea6ef51629dcdada6b4d8910989b999ac"
           }
         ]
       }

@@ -82,8 +82,11 @@
 
   fetch("../index.json").then(function (r) { return r.json(); }).then(function (idx) {
     var box = document.getElementById("list"); box.innerHTML = "";
-    var items = (idx.kinds["boot-anim"] || []).concat(idx.kinds["wallpaper"] || []);
-    (idx.kinds["boot-anim"] || []).forEach(function (t) {
+    // 插件中心读 kinds.appearance;kinds.boot-anim 是老宿主的兼容别名。
+    // 两个桶内容一样,优先 appearance,没有才回落到 boot-anim(别把同一批主题列两遍)。
+    var K = idx.kinds || {};
+    var list = K["appearance"] || K["boot-anim"] || [];
+    list.forEach(function (t) {
       var el = document.createElement("div");
       el.className = "th";
       el.innerHTML = "<b>" + t.name + " " + t.version + "</b><span>" + (t.durationMs / 1000).toFixed(1) +
@@ -94,7 +97,7 @@
       };
       box.appendChild(el);
     });
-    say("载入 " + (idx.kinds["boot-anim"] || []).length + " 个主题");
+    say("载入 " + list.length + " 个主题");
   }).catch(function (e) { say("index.json 读取失败:" + e.message); });
 
   // 主题自己在 theme.json 里声明的 options:真宿主会把它们逐个拼进 query,

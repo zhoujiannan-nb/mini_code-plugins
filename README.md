@@ -1,11 +1,27 @@
 # mini_code 插件仓库
 
-给 [mini_code](https://github.com/zhoujiannan-nb/mini_code) 用的公开插件/素材仓库。
-目前只有一类东西：**开机动画**（`boot-anim/`）。以后各种主题（聊天底图、大字横幅、
-开场视频……）按同样的目录约定往这里加。
+给 [mini_code](https://github.com/zhoujiannan-nb/mini_code) 用的公开插件仓库。
 
-mini_code 的「配置 → 开机动画 → 在线获取」直接读本仓库根目录的
-[`index.json`](index.json)，列表、下载、装到本地都在应用里完成，不用手工拷文件。
+现在这里有两类插件：
+
+- **外观插件**（`kind: appearance`，在 `boot-anim/`）——目前带的唯一能力是**开机动画**：
+  一个 `plugin.json` 里写了 `boot` 块，宿主就把它当开机动画用。以后的外观主题（聊天底图、
+  大字横幅、配色方案……）就再多加一个块，目录约定不变。
+- **工具插件**（`kind: tool`，在 `tool/`）——往模型的工具列表**追加**工具，像网页搜索那样。
+  真源是 `plugin.json` 里的 `tools[]`，参数走 **stdin**（不是命令行），实现在同目录的脚本里。
+  见 [`tool/web-search/`](tool/web-search/)。
+
+两类的**目录写法不一样**，这是有意为之：`boot-anim/<id>/` 的真源是 `theme.json`
+（`plugin.json` 由它派生，别手改）；`tool/<id>/` 的真源就是 `plugin.json` 本身。
+
+装、选、换、删**全在 mini_code 的「配置 → 插件中心」里**：左边的列表是本地已装的，右边是
+仓库里的市场（进入页签自动拉一次）。装完之后点那一行的「**设为开机动画**」就生效，想先看看
+就点「预览」。宿主直接读本仓库根目录的 [`index.json`](index.json)，不用手工拷文件。
+
+`boot-anim/` 里每个主题目录同时留了 `theme.json`：它是**动画自己的书写格式**（人读着舒服、
+`tools/make_index.py` 认它），`tools/make_plugins.py` 从它派生出宿主认的 `plugin.json`。
+两个文件都进版本库，但这一类里**唯一的真源是 `theme.json`**。（`tool/` 那类没有 `theme.json`，
+`plugin.json` 就是真源。）
 
 ## 现有主题
 
@@ -14,14 +30,35 @@ mini_code 的「配置 → 开机动画 → 在线获取」直接读本仓库根
 | [接入序列](boot-anim/mc-access/) `mc-access` | 17.8s | 复刻 dsh-startup-screen 的电影感序列：黑幕芯片标识 → 过曝洗白 → 五步接入（**真声女声播报** + 底噪 + 咔哒音效）→ 色散故障揭幕。品牌已是 Mini Code，终幕只念一声 `Welcome` |
 | [机密接入](boot-anim/mc-secret/) `mc-secret` | 17.0s | 更硬的那一款：**默认中文女声**（`line-cn-1..5`）一屏一句报读，红色徽标、右下角人物立绘、结尾「降世」事件卡都按上游素材原样保留。`voice_lang=en` 换英文，`mascot=none` 收掉立绘，`event_window=1` 才在结尾弹事件卡（默认不弹） |
 
-嫌长就把「配置 → 开机动画 → 速度」调快（宿主的 `speed` 会一起压缩画面节奏），
+两个都是 `kind: appearance` 的插件，`plugin.json` 里带 `boot` 块（入口 / 预览图 / 时长上限）。
+
+### 现有工具插件
+
+| 插件 | 给模型追加什么 | 一句话 |
+|---|---|---|
+| [网页搜索 / 正文读取](tool/web-search/) `web-search` | `web_search` / `web_read` / `web_search_multi` | 真实（无头）浏览器搜 bing/baidu/google/duckduckgo/zhihu，正文抽成 markdown。**要本机自备 `web_search` 项目 + playwright + chromium**，缺依赖时工具会返回一段写清楚去哪儿装的错误 |
+
+### 装、选、开
+
+全在**「配置 → 插件中心」**，两条路：
+
+- **市场页签**：进去会自动拉一次 `index.json`，找到想要的动画 → 右边详情 → **安装**；
+- **已装页签**：装完就在这里。点一行选中，右边详情里 **设为开机动画**（这一下会同时把
+  `boot_anim.enabled` 打开 —— 点了它显然是想看见它）；`预览` 直接播一遍，不用等下次启动。
+
+**外观页**只留了一个状态摘要（“已启用 · 当前：接入序列 · 已装 2 个”）和一条
+`去插件中心选 / 装动画 →` 的跳转；动画的**选择**不再是一张重复的表单。
+
+嫌长就把「外观 → 开机动画 → 速度」调快（宿主的 `speed` 会一起压缩画面节奏），
 不想听声音就勾「静默」——勾上后主题连音频文件都不会去下载。
+`启用` 关掉、或者把动画插件在插件中心停用，效果一样：都不会播。
 
 ### 主题自己的开关（`theme.json` 的 `options`）
 
-宿主的设置页只给 **速度 / 身份名 / 静默 / 片尾可交互** 四个开关，剩下的开关由主题在
-`theme.json` 里自己声明、以 query 传进 iframe。要改就改装到本地的那一份
-`~/.mini_code/boot-anim/<id>/theme.json`（改完重启 mini_code）：
+宿主的设置页只给 **启用 / 播放时机 / 速度 / 静默** 四个开关（身份名与片尾可交互两个控件
+已经删了 —— 它们只对个别主题有意义，现在是主题自己在 `options` 里声明）。剩下的开关由主题
+在 `theme.json` 里声明、以 query 传进 iframe。要改就改装到本地的那一份
+`~/.mini_code/plugins/<id>/theme.json`（改完重启 mini_code）：
 
 | 键 | 主题 | 默认 | 说明 |
 |---|---|---|---|
@@ -31,6 +68,10 @@ mini_code 的「配置 → 开机动画 → 在线获取」直接读本仓库根
 | `access_password` | 机密接入 | 空 | 访问密码；只在 `require_interaction=1` 时生效，拦在第 2 步「身份资料确认」 |
 | `require_interaction` | 两个都有 | `0` | `1` = 前两步停下来等确认（最多等 12 s，不许把开机关死） |
 | `brand1` / `brand2` / `brand3a` / `org_zh` / `org_en` / `welcome_box` / `footer` … | 两个都有 | 见各自 `theme.json` | 屏幕上那几行品牌字（迷你联盟 / MiniCode / 迎接最高智能降临 …），想换成自己项目的名字改这里 |
+
+`theme.json` 顶上那几个（`entry` / `durationMs` / `maxMs` / `interactive` / `minViewport`）
+`plugin.json` 的 `boot` 块里都有；宿主**先看 `plugin.json`，缺的字段才回落到 `theme.json`**，
+所以老版本插件（只有 `theme.json`）照样能播。
 
 ## 本地跑起来看
 
@@ -49,15 +90,57 @@ python -m http.server 8700
 
 ## 我想写一个主题
 
-看 [docs/theme-contract.md](docs/theme-contract.md)。三步：
+看 [docs/theme-contract.md](docs/theme-contract.md)。四步：
 
 1. `boot-anim/<你的 id>/` 里放 `theme.json` + `index.html`（+ `preview.svg`）；
-2. `python tools/make_index.py` 校验并重新生成 `index.json`；
-3. 提 PR。
+2. `python tools/make_plugins.py` —— 校验 `theme.json`，派生 `plugin.json`，并重建 `index.json`；
+3. `python tools/make_index.py --check` 自查一遍（sha256 对不对得上）；
+4. 提 PR。
 
 纯前端、无构建步骤、无依赖 —— 会写 HTML/CSS 就能写主题。
-改完主题**一定要重跑 `make_index.py`**，否则 `index.json` 里的 sha256 与文件对不上，
-用户点安装会报校验失败（`python tools/make_index.py --check` 可以在提 PR 前自查）。
+
+`theme.json` 是**唯一真源**，`plugin.json` 由它派生，别手改后者（下次生成会被覆盖）。
+
+改完主题**一定要重跑 `make_plugins.py`**，否则 `index.json` 里的 sha256 与文件对不上，
+用户点安装会报校验失败。
+
+### 两个清单各管什么
+
+| 文件 | 谁读 | 管什么 |
+|---|---|---|
+| `theme.json` | 仓库工具、宿主兜底 | 动画自己的完整清单：入口、时长、`options`（品牌文案 / 语音语种 / 立绘） |
+| `plugin.json` | 宿主（`plugin` 包） | 声明"这是个插件" + `kind` + `boot` 块（入口 / 预览图 / 时长上限 / 标签），也就是插件中心那张卡上的字 |
+
+宿主加载时**先看 `plugin.json`、缺的字段回落到 `theme.json`**，所以：
+
+- 只放 `theme.json`（老式主题）= 还能播，但**在插件中心里不是一张卡**（没有 `plugin.json` 就不算插件）；
+- 两个都放 = 插件中心里能装能选，主题自己的 `options` 照旧生效。
+
+### `index.json` 里的桶
+
+`kinds.appearance` 是插件中心读的那一份；`kinds.boot-anim` 是给只认这个桶的老宿主留的
+**兼容别名**，两桶内容一样（别名桶少一个 `category` 字段）。已经踩过的坑：市场把各桶合并
+成一张列表，同一段动画因此并排列了两张卡，点哪张装出来的都是同一个目录。宿主现在**按 id
+去重**（桶名有序，`appearance` 排在前面先命中）；仓库这边也不该把同一个 id 挂到别的桶里
+去"多露一次脸"。
+
+`tool` / `process` / `skin` / `wallpaper` 这些桶是**其余各类**，条目由
+`tools/make_plugins.py` 从各自的 `plugin.json` 扫出来（空的桶不写，省得市场里出现
+"点进去什么都没有"的分组）。**别把同一个 id 也挂进 `boot-anim`** —— 那对别名只是给老宿主留的。
+
+### 插件目录里能放哪些文件（宿主的下载白名单）
+
+安装器逐个文件下下来之前会先验：路径必须在插件目录内、扩展名必须在白名单里、单文件 ≤8MB、
+总数 ≤40 个、合计 ≤24MB。白名单（`web/plugins_catalogue.go` 的 `catalogueDownloadExtTypes`）：
+
+```
+.css .svg .png .jpg .jpeg .webp .gif .woff .woff2 .ttf .otf .html .htm
++  .js .mjs .json .md .py .sh .mp3 .ogg .wav .ico
+```
+
+不在表里的文件**装的时候会被直接拒**（`不允许的插件文件类型`）。所以
+`tools/make_plugins.py` 在生成索引时就按同一张表查一遍，把失败提前到提交阶段，
+而不是等用户点安装。插件目录还必须**扁平**（不许子目录）。
 
 ## 语音 / 音效素材
 
@@ -84,8 +167,9 @@ RMS 得来的：素材头上有约 120 ms 静音、尾巴留着一小截空气�
 它的终幕 `line-6` / `line-cn-6` **不带**：原句是 "Welcome to DeepSeek Harness"（以及中文版），
 把别人家的品牌名念进 Mini Code 不合适，所以终幕只有画面与合成钟。
 
-终幕那句「欢迎 X 访问」里的 X 取宿主「配置 → 开机动画 → **身份名**」，没填就用主题
-默认值（哈基米指挥官）。
+终幕那句「欢迎 X 访问」里的 X 取主题 `options.identity`（默认 `哈基米指挥官`）—— 宿主设置页
+原先有个「身份名」输入框，现在删了（它只对这类主题有意义），要改就改插件目录里的
+`theme.json`。
 
 两套主题都是脚本从上流仓库生成的，可复现，且**每一条改动都要能匹配上**（匹配不上直接
 失败退出，不会生成半成品）：
@@ -104,11 +188,22 @@ python tools/port_secret.py --src ../dsh-secret   # 上游 7 张内嵌图也会�
 ## 目录约定
 
 ```
-index.json                 机器读清单(tools/make_index.py 生成,别手改)
-boot-anim/<id>/            开机动画主题
+index.json                 机器读清单(tools/make_plugins.py 生成,别手改)
+                             kinds.appearance = 插件中心读的那一份
+                             kinds.boot-anim  = 老宿主的兼容别名(内容一样,少个 category)
+                                ⚠ 同一个 id 会同时出现在两个桶里。新宿主按 id 去重,
+                                  只列一张卡;别在别的桶里重挂同一个 id 来"多露一次脸"
+boot-anim/<id>/            外观插件(目前这一类只含开机动画)
+  plugin.json                宿主认的清单:kind=appearance + boot 块(派生文件,别手改)
+  theme.json                 动画自己的清单:入口/时长/options(真源)
+  index.html / boot.js / boot.css / preview.svg / *.mp3 / *.webp …
+tool/<id>/                 工具插件(第二类)：**plugin.json 就是真源**，没有 theme.json
+  plugin.json                kind=tool + tools[]（name/description/parameters/command/args/timeout_seconds）
+  adapter.py / config.json   工具的实现与它的配置（参数从 **stdin** 进来，不是命令行）
 preview/                   宿主模拟器(本地预览用)
 docs/theme-contract.md     契约 v1
-tools/make_index.py        校验 + 生成 index.json
+tools/make_plugins.py      校验 theme.json → 生成 plugin.json + index.json(**主要用这个**)
+tools/make_index.py        只重建 index.json(绕过 plugin.json 的老路子;--check 自查用)
 tools/port_access.py       从上流仓库移植「接入序列」(带逐条补丁,可复现)
 tools/port_secret.py       从上流仓库移植「机密接入」(同样逐条补丁,顺带把内嵌图抽成扁平文件)
 LICENSE-DSH                上游 dsh-startup-screen 的 MIT 原文(接入序列是它的衍生作品)
@@ -134,7 +229,7 @@ LICENSE-DSH-SECRET         上游 dsh-startup-secret 的 MIT 原文(机密接入
   了别家的名字）、宿主协议对接、`<audio>` 取素材、去掉浏览器合成音兜底、播报默认语种换成中文女声。
   **这些素材的授权要单独判断**：人物线稿画的是真实的人、徽标是政治标识、女声是别人的录音，
   MIT 授权覆盖的是代码而不是它们。自用/学习没问题；要把这个仓库再公开分发或商用，先确认这部分
-  授权，或者干脆别装这个主题（设置页换回「接入序列」即可）。不想看到立绘也可以
+  授权，或者干脆别装这个主题（插件中心里停用/卸载它即可）。不想看到立绘也可以
   `mascot=none`，那样连图片请求都不会发。
 - 主题里 **handoff 的时机**（在淡出**开始**那一帧就通知宿主叠化，否则交界处会闪一下）这个手法借鉴自 dsh-startup-screen 与
   [dsh-chat-wallpaper](https://github.com/LeeRolling/dsh-chat-wallpaper)（都是 MIT，© LeeRolling，给 DeepSeek Harness 写的插件）。

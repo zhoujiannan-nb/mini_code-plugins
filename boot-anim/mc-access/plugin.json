@@ -1,0 +1,23 @@
+{
+  "id": "mc-access",
+  "name": "接入序列",
+  "version": "1.0.1",
+  "kind": "appearance",
+  "author": "zhoujiannan-nb",
+  "description": "最有大片感的一个:黑屏亮起 Mini Code 的标志,一屏一屏走到进软件,中间有个女声在念操作提示,最后说一声 Welcome。全程约 18 秒,不想听声音就勾「静默」。",
+  "boot": {
+    "entry": "index.html",
+    "preview": "preview.svg",
+    "durationMs": 17800,
+    "maxMs": 40000,
+    "interactive": false,
+    "minViewport": 480,
+    "tags": [
+      "开机",
+      "电影感",
+      "语音",
+      "音效",
+      "复刻"
+    ]
+  }
+}

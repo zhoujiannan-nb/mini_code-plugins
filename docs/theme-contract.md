@@ -1,22 +1,33 @@
 # 主题契约 v1（boot-anim）
 
-一个主题 = `boot-anim/<id>/` 目录里的三个东西：
+一个主题 = `boot-anim/<id>/` 目录里的这几样东西：
 
 ```
 boot-anim/mc-access/
-├── theme.json      必需：清单（宿主只读它，不猜目录结构）
+├── theme.json      必需：动画自己的清单（时长 / options / 品牌文案）
+├── plugin.json     必需：宿主认的插件清单（kind=appearance + boot 块）
 ├── index.html      必需：入口，自包含（可以另放 .css/.js/图片，用相对路径）
 └── preview.svg     建议：卡片缩略图（320×180，SVG 或 PNG）
 ```
 
+**两个清单的关系**：`theme.json` 是唯一真源，`plugin.json` 由
+`tools/make_plugins.py` 从它派生（别手改）。宿主先读 `plugin.json` 的 `boot` 块，
+缺的字段（时长、`interactive`、`minViewport`、`options`…）再回落到同目录的
+`theme.json` —— 所以早先只有 `theme.json` 的主题仍能播，只是不会出现在插件中心的列表里
+（没有 `plugin.json` 就不算插件）。
+
 宿主（mini_code）把它当成**不可信第三方页面**处理：
 
 ```html
-<iframe sandbox="allow-scripts" src="/boot-anim/&lt;id&gt;/index.html?speed=1&name=..."></iframe>
+<iframe sandbox="allow-scripts" src="/bootanim/&lt;id&gt;/index.html?speed=1&mute=0&interactive=0"></iframe>
 ```
 
+（`/bootanim/` 是宿主侧的 URL 前缀，与仓库里的 `boot-anim/` 目录名不是一回事。）
+
 - `sandbox="allow-scripts"` **没有** `allow-same-origin` → 主题拿不到宿主的 localStorage / DOM / cookie；
-- `/boot-anim/*` 响应头带 `Content-Security-Policy: connect-src 'none'; default-src 'self' data: blob:` →
+- `/bootanim/*` 响应头带 `Content-Security-Policy: default-src 'none'; script-src 'self' 'unsafe-inline';
+  style-src 'self' 'unsafe-inline' data: https:; img-src 'self' data: blob: https:; media-src 'self' data: blob:;
+  connect-src 'none'; …` →
   主题**连不上任何接口**（包括宿主自己的 `/api/*`），也连不了外网；
 - 想放音乐/字体请**放文件进主题目录**用相对路径引，不要 `fetch` 外部地址（CSP 会拦）。
 
@@ -37,6 +48,26 @@ boot-anim/mc-access/
 | `minViewport` | | 窗口宽度小于这个值就不播（手机/窄窗别挡路） |
 | `tags` | | 列表里的标签 |
 | `options` | | 默认参数，宿主以 **query string** 传进入口 |
+
+## plugin.json 字段（`kind: appearance`）
+
+宿主只认这一份来把目录当成插件（`plugin` 包，见 mini_code 仓库的 `plugin/boot.go`）：
+
+| 字段 | 必需 | 说明 |
+|---|---|---|
+| `id` / `name` / `version` | ✅ | 同 `theme.json`，`id` 与目录名一致 |
+| `kind` | ✅ | 固定 `appearance`（目前外观插件只带开机动画能力） |
+| `author` / `description` | | 插件中心卡片上显示 |
+| `boot.entry` | ✅ | 开机动画入口，**必须是 `.html`/`.htm` 且文件真实存在** |
+| `boot.preview` | | 缩略图，必须是图片且存在 |
+| `boot.durationMs` | | 正常播完约多久（300–60000）；0 = 回落 `theme.json` |
+| `boot.maxMs` | | 硬超时，宿主再钳到上限 30000（`BootMaxMsCeiling`） |
+| `boot.interactive` | | 同 `theme.json` |
+| `boot.minViewport` | | 同 `theme.json` |
+| `boot.tags` | | 卡片标签（也就是"分类"的展示位 —— 插件中心不再分页签，全凭 tag 区分） |
+
+`plugin.json` 由 `python tools/make_plugins.py` 生成，跑一次同时重建 `index.json`
+（`kinds.appearance`）。**改完主题一定重跑**，否则安装时 sha256 校验失败。
 
 宿主会拼这些 query（主题自行读取、自行兜默认值）：
 `speed`（0.35–3）、`name`（用户身份名，可空）、`interactive`（0/1）、`mute`（0/1，用户勾了「静默」）、
@@ -87,7 +118,7 @@ parent.postMessage({ mc: "boot-anim", type: "...", id: "<主题 id>", ... }, "*"
     传 `--autoplay-policy=no-user-gesture-required`（见 `desktop/windows/windows.go`）；
   - 用普通浏览器打开 Web 版时，首次可能仍被策略拦掉 —— 所以 **每个 `play()` 都必须
     `catch`**，没声音也要把动画演完。
-- 宿主「配置 → 开机动画 → 静默」会以 `mute=1` 传进来，主题必须认这个参数（最好的做法
+- 宿主「配置 → 外观 → 开机动画 → 静默」会以 `mute=1` 传进来，主题必须认这个参数（最好的做法
   是干脆不加载音频文件；接入序列实测勾静默后一个音频字节都不请求）。
 - 别拿系统 TTS 当人声：Windows 自带中文音色（Microsoft Huihui 那类）塑料味很重，
   技术档案 1.2.0 试过，被否掉了。要么用真素材，要么只上音效。
@@ -119,23 +150,30 @@ parent.postMessage({ mc: "boot-anim", type: "...", id: "<主题 id>", ... }, "*"
 ```bash
 mkdir boot-anim/my-thing
 # 放 theme.json / index.html / preview.svg
-python tools/make_index.py      # 校验字段并重新生成 index.json
+python tools/make_plugins.py    # 校验 theme.json → 生成 plugin.json + index.json
 python -m http.server 8700      # 另开一个终端
 # 打开 http://127.0.0.1:8700/preview/  实时看效果(和真宿主同规则)
 ```
 
-`tools/make_index.py` 会挡住这些常见错：`id` 与目录名不一致、version 不是 `x.y.z`、
-entry 不存在或越界、`maxMs < durationMs`、preview 缺失。**不要手改 `index.json`。**
+`tools/make_plugins.py`（内部复用 `make_index.py` 的校验）会挡住这些常见错：`id` 与目录名
+不一致、version 不是 `x.y.z`、entry 不存在或越界、`maxMs < durationMs`、preview 缺失、
+`plugin.json` 里 `boot.entry` 不是 html。**不要手改 `index.json`，也别手改 `plugin.json`。**
 
-改完主题文件**一定要重新跑一次 `make_index.py`**：宿主安装是按 `index.json` 里的 sha256
+改完主题文件**一定要重新跑一次 `make_plugins.py`**：宿主安装是按 `index.json` 里的 sha256
 逐文件校验的，索引一过期装不上（这个坑踩过：先跑脚本、后又改了一行 HTML）。提交前用
 `python tools/make_index.py --check` 自查一遍，不一致会直接退出码 1。
 
 ## 宿主侧行为（供参考，改动请同步这里的文档）
 
-- 默认装到 `~/.mini_code/boot-anim/<id>/`，目录可在「配置 → 开机动画」里改；
+- 插件装到 `~/.mini_code/plugins/<id>/`（`plugin.DirPath()`），也就是插件中心里那一份；
+  早先的独立主题目录 `~/.mini_code/boot-anim/<id>/` 仍然认，但只当"老式主题"读，不出卡片；
+- 装/选/换/删都在「配置 → 插件中心」：市场页签读 `index.json` 的 `kinds.appearance`，
+  装完在已装页签里点「设为开机动画」（顺手把 `boot_anim.enabled` 打开），「预览」立刻播一遍；
 - 播放时机：页面首帧之前就用内联遮罩盖住（避免白闪），主题在遮罩里的 iframe 中跑；
 - 播放策略：`每次会话`（sessionStorage 记一次）/ `总是` / `每天`（localStorage 记日期）/ `关闭`；
-- 硬超时 `maxMs` 无条件收走画面；主题脚本报错、资源 404 也走同一条兜底；
+- 选哪个：`boot_anim.theme` 钉住的那个优先，没钉就取 id 排序第一个能播的 boot 插件
+  （开机画面是全局的，不存在同时播两个）；
+- 硬超时 `maxMs` 无条件收走画面（再钳到 30000）；主题脚本报错、资源 404 也走同一条兜底；
 - 跳过 affordance（右下角「跳过 Esc」按钮 + `Esc` 键）由**宿主统一提供**，主题不要重复实现；
-- 只在 `window.innerWidth >= minViewport` 时播放。
+- 只在 `window.innerWidth >= minViewport` 时播放；
+- 插件在插件中心被**停用/卸载**后，它的开机动画当场消失（不再是"装了就一直在"）。
