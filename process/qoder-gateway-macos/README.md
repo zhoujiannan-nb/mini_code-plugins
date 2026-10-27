@@ -149,3 +149,28 @@ codesign --force --sign - QoderAPI
 * 没有 GUI、没有 launchd 常驻：生命周期归 mini_code 的插件中心管。
 * 出问题先看 `sh run.sh --selftest` 与插件日志；`GET /health` 能立刻分辨"进程活着但上游不认"
   还是"没起来"。
+
+## 发布记录（2026-10-27）
+
+已发布到 `mini_code-plugins` 的 `process/qoder-gateway-macos/`（commit `3a99ca1`），
+插件中心 `GET /api/plugins/catalog` 里能看到：
+
+```
+qoder-gateway-macos   process   v1.0.0   files=7   7.35MB
+```
+
+发布前跑过（都在 Windows 开发机上，能真验的都验了，只有"真的执行 Mach-O"这一项留给 mac）：
+
+```
+make_payload_macos.py   -> arm64 6.46MB→3.53MB（带 ad-hoc 签名）/ amd64 6.85MB→3.79MB
+mac_plugin_test.py      -> PASS (48/48)   清单/载荷解出/Mach-O 头/架构防错/平台防呆/体积白名单
+mac_launcher_sim.py     -> PASS (17/17)   main() 的参数拼接、看守→接管、退出码 2/3、配置覆盖
+index_entry_check.py    -> PASS (28/28)   两个网关各自按宿主规则逐项校验
+remote_verify_macos.py  -> PASS           走 raw 下载链路，7 个文件 size+sha256 全一致，
+                                          两个载荷解开后 arm64 signed=True / amd64 signed=False
+```
+
+> 这台机器没有苹果设备，所以**没有做过真机启动**。设计上尽量把风险压到"能自查"：
+> arm64 的签名在生成阶段就强制校验（缺签名直接拒绝发布），装完可以 `sh run.sh --selftest`
+> 一条命令验到"二进制能跑 `-version`"，真出问题日志里会明确说是签名、架构还是 Python。
+

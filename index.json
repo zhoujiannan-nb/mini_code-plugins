@@ -632,8 +632,8 @@
         "files": [
           {
             "path": "process/qoder-gateway-macos/README.md",
-            "size": 7511,
-            "sha256": "0170f65ffcd669c59f3a84314962cd4521ecd28453448b4be1c3aceef20cbd83"
+            "size": 8870,
+            "sha256": "6b5570231b001713dfbcaaa0fdca49398eef6ee4e8a707a9859997d5cafc53e7"
           },
           {
             "path": "process/qoder-gateway-macos/gateway.py",
