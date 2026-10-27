@@ -44,13 +44,15 @@
 
 ### 现有进程插件
 
-| 插件 | 给你什么 | 一句话 |
-|---|---|---|
-| [Qoder 网关](process/qoder-gateway/) `qoder-gateway` | `http://127.0.0.1:32999/v1`（OpenAI 兼容） | 把自己买的 Qoder 套餐变成本地 OpenAI 兼容 API：标准字段、原生 `tool_calls`、`reasoning_content`、真实 `cached_tokens` 前缀缓存命中。**二进制随插件发**（`qoder-gw.bin.json`：stripped exe → zlib → base64，3.8MB；宿主安装器不收 `.exe` 且单文件限 8MB），首次运行自动解到 `%LOCALAPPDATA%\Programs\QoderAPI\QoderAPI.exe` 并校验 sha256，**拉下来就能用、不用 Go 不用编译**。PAT 放 `~/.qoder-api/pat.txt`，客户端 key 放 `~/.qoder-api/key.txt`（没有就随机生成），凭据绝不进仓库 |
+| 插件 | 平台 | 给你什么 | 一句话 |
+|---|---|---|---|
+| [Qoder 网关](process/qoder-gateway/) `qoder-gateway` | Windows | `http://127.0.0.1:32999/v1`（OpenAI 兼容） | 把自己买的 Qoder 套餐变成本地 OpenAI 兼容 API：标准字段、原生 `tool_calls`、`reasoning_content`、真实 `cached_tokens` 前缀缓存命中。**二进制随插件发**（`qoder-gw.bin.json`：stripped exe → zlib → base64，3.8MB；宿主安装器不收 `.exe` 且单文件限 8MB），首次运行自动解到 `%LOCALAPPDATA%\Programs\QoderAPI\QoderAPI.exe` 并校验 sha256，**拉下来就能用、不用 Go 不用编译**。PAT 放 `~/.qoder-api/pat.txt`，客户端 key 放 `~/.qoder-api/key.txt`（没有就随机生成），凭据绝不进仓库 |
+| [Qoder 网关（苹果版）](process/qoder-gateway-macos/) `qoder-gateway-macos` | macOS（arm64 + Intel） | 同上，同一个端口同一套凭据约定 | 同一份 Go 源码交叉编译成 Mach-O。**两个架构各一个载荷**（`qoder-gw-macos-arm64.bin.json` 3.53MB / `qoder-gw-macos-amd64.bin.json` 3.79MB），首次运行按本机 CPU 选对架构、解到 `~/Library/Application Support/QoderAPI/QoderAPI`、校验 sha256 + Mach-O 架构 + 代码签名、`chmod 755`。Apple Silicon 上 arm64 没有 `LC_CODE_SIGNATURE` 会被内核 `killed: 9`，所以发布的产物带 ad-hoc 签名，启动器还会在异常退出时 `codesign --force -s -` 补一次。入口是 `sh run.sh`（先找 Python 3.8+，缺了就叫你 `xcode-select --install`）；装完可以 `sh run.sh --selftest` 自查 |
 
 进程插件的启停在**「配置 → 插件中心」**里（开始 / 停止 / 重启 / 看日志），装了 `autostart`
-就跟着 mini_code 一起起来；反过来 mini_code 没跑，那个端口也不会有人听。它用 `python gateway.py`
-启动，靠上游宿主注入的 `MINICODE_PLUGIN_DIR` 找自己的文件，**只监听 127.0.0.1**。
+就跟着 mini_code 一起起来；反过来 mini_code 没跑，那个端口也不会有人听。两个 Qoder 网关
+**同端口**，所以一台机器上只装其中之一（装错了也没关系：另一个会认出端口上是同一个网关，
+转成看守而不是抢端口）。它们都**只监听 127.0.0.1**。
 
 ### 装、选、开
 
