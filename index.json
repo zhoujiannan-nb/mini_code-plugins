@@ -573,31 +573,36 @@
       {
         "id": "qoder-gateway",
         "name": "Qoder 网关（本地 OpenAI 兼容中转）",
-        "nameEn": "",
+        "nameEn": "Qoder Gateway",
         "author": "flycat666",
-        "version": "1.0.0",
+        "version": "1.1.0",
         "license": "MIT",
-        "description": "把 Qoder 套餐暴露成本地 OpenAI 兼容 API（base_url http://127.0.0.1:32999/v1）。网关二进制随插件一起发（qoder-gw.bin.json：stripped exe 经 zlib+base64，3.8MB，宿主安装器不收 .exe 且单文件限 8MB），首次运行自动解到 %LOCALAPPDATA%\\Programs\\QoderAPI\\QoderAPI.exe 并按清单 sha256 校验，拉下来就能用、不用编译。凭据一律不在仓库里：PAT 读 ~/.qoder-api/pat.txt，客户端 key 读 ~/.qoder-api/key.txt（没有就随机生成）。",
+        "description": "把 Qoder 套餐暴露成本地 OpenAI 兼容 API（base_url http://127.0.0.1:32999/v1），并在界面右上角显示 Qoder 积分额度。网关二进制随插件一起发（qoder-gw.bin.json：stripped exe 经 zlib+base64，3.8MB，宿主安装器不收 .exe 且单文件限 8MB），首次运行自动解到 %LOCALAPPDATA%\\Programs\\QoderAPI\\QoderAPI.exe 并按清单 sha256 校验，拉下来就能用、不用编译。额度面板由启动器每 60 秒查询本机网关的 /qoder/usage 预渲染成静态片段（缓存命中、剩余额度、套餐与重置时间）。凭据一律不在仓库里：PAT 读 ~/.qoder-api/pat.txt，客户端 key 读 ~/.qoder-api/key.txt（没有就随机生成）。",
         "path": "process/qoder-gateway",
         "category": "process",
-        "tags": [],
+        "tags": [
+          "openai",
+          "gateway",
+          "qoder",
+          "quota"
+        ],
         "tools": [],
         "requires": "Python 3.8+（启动器）+ 自己的 Qoder PAT（放 ~/.qoder-api/pat.txt）。二进制已随插件附带，无需 Go、无需编译。",
         "files": [
           {
             "path": "process/qoder-gateway/README.md",
-            "size": 5369,
-            "sha256": "0f09c3ff386604d0941a3503c6290e2c06072341cf3a25b5ffda151a06e2566f"
+            "size": 6967,
+            "sha256": "04369016cff53d4bf7ac957dc0f9ad96aeffcb5d410ddfc862b5751d52840df0"
           },
           {
             "path": "process/qoder-gateway/gateway.py",
-            "size": 10070,
-            "sha256": "826981772902b659ff08cd289b0fc15ce2730777d04673c27ae84b92a6670c01"
+            "size": 16479,
+            "sha256": "6599e401907468014429451ca00fb76452506f1b89a022912aec3154c7c378e5"
           },
           {
             "path": "process/qoder-gateway/plugin.json",
-            "size": 1575,
-            "sha256": "c5fe4638cfb831d5701c9b11d7ac7b0d791e538a2469144ef87e87b89795a52e"
+            "size": 2264,
+            "sha256": "dfc1d105514f63f080388d9d925badab36d50011f90a639dfd25de36c7ed8a85"
           },
           {
             "path": "process/qoder-gateway/qoder-gw.bin.json",
@@ -608,6 +613,16 @@
             "path": "process/qoder-gateway/qoder-gw.example.json",
             "size": 151,
             "sha256": "c851e324d82d75eddad5aef48c89922e9558e671dce136d09bf856d171fc00ee"
+          },
+          {
+            "path": "process/qoder-gateway/quota-slot.html",
+            "size": 2081,
+            "sha256": "605e1d9981d3ab5aa931e35e31539abbd5e7aacc083222e2f18998b6ed1fbc8f"
+          },
+          {
+            "path": "process/qoder-gateway/quota_render.py",
+            "size": 11571,
+            "sha256": "438e30c25c4023d7c3a0bf4727969dcec752d6498603c95d3fce8360639ea88a"
           }
         ]
       },

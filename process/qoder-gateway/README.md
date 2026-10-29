@@ -42,6 +42,32 @@ cd qoderapi-gw
 python make_payload.py          # 自己 go build -s -w，写出 plugin/qoder-gw.bin.json
 ```
 
+## 额度面板（界面右上角的 Qoder 积分徽标）
+
+装上之后，界面右上角会有一枚额度徽标：剩余 / 总量、已用百分比、进度条、状态色
+（正常绿 / 偏低黄 / 告急红 / 未运行灰）。数据直接来自本机网关的 `GET /qoder/usage`
+（上游真实返回的 `user_quota`），不是估的。
+
+启动器每 60 秒问一次 `/qoder/usage`，把结果预渲染成 `quota-slot.html` 写进插件目录；
+宿主资源路由带 `Cache-Control: no-store`，每次打开/刷新页面都重新拉 ——
+所以「刷新页面 = 刷新额度」。
+
+**为什么不实时刷新**：宿主把 `ui.slots` 的片段放进无脚本、跨源隔离的 `<iframe sandbox>`
+（裸 sandbox，连 `allow-scripts` 都不给）。Chromium 151 实测：内联样式与中文正常，
+但 `<meta http-equiv=refresh>` **不触发**、同源 `<img>` / `<link>` **连请求都发不出**
+（`'self'` 在 opaque origin 下不匹配）。片段里跑不了脚本、拉不到资源，只能显示静态内容。
+
+三个地方能看额度：
+
+1. 界面右上角徽标（`ui.slots = overlay`）
+2. 完整额度页 `http://127.0.0.1:7500/plugins/qoder-gateway/quota.html`
+   （套餐、重置时间、token、前缀缓存命中率都在这）
+3. 终端 `python gateway.py --quota`
+
+`ui.slots[].height` 是写死的像素高度，写小了徽标会被裁。当前 **117** 不是猜的：
+`fit_height.py` 用 Chromium 在 100% / 200% 缩放下各量一次 `.wrap` 的真实高度，
+取最大 + 6px 余量写回清单（卡片本体 91）。改了徽标样式就重新量一次。
+
 ## 凭据一律不在仓库
 
 | 东西 | 位置 | 说明 |
