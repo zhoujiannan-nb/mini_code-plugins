@@ -142,6 +142,46 @@ codesign --force --sign - QoderAPI
 - **非 macOS 直接说清楚**：本插件在别的平台上启动会以退出码 4 退出，并提示 Windows 该装
   `qoder-gateway`、Linux 自己 `go build`。
 
+## 额度面板（界面右上角的 Qoder 积分徽标）
+
+装上之后，界面右上角会有一枚额度徽标：剩余 / 总量、已用百分比、进度条、状态色
+（正常绿 / 偏低黄 / 告急红 / 未运行灰）。数据直接来自本机网关的 `GET /qoder/usage`
+（上游真实返回的 `user_quota`），不是估的。
+
+启动器每 60 秒问一次 `/qoder/usage`，把结果预渲染成 `quota-slot.html` 写进插件目录；
+宿主资源路由带 `Cache-Control: no-store`，每次打开/刷新页面都重新拉 ——
+所以「刷新页面 = 刷新额度」。
+
+**为什么不实时刷新**：宿主把 `ui.slots` 的片段放进无脚本、跨源隔离的 `<iframe sandbox>`
+（裸 sandbox，连 `allow-scripts` 都不给）。实测：内联样式与中文正常，但
+`<meta http-equiv=refresh>` **不触发**、同源 `<img>` / `<link>` **连请求都发不出**
+（`'self'` 在 opaque origin 下不匹配）。片段里跑不了脚本、拉不到资源，只能显示静态内容。
+
+三个地方能看额度：
+
+```bash
+# 1. 界面右上角徽标（ui.slots = overlay）
+# 2. 完整额度页：用浏览器直接打开插件目录里的 quota.html
+open ~/.mini_code/plugins/qoder-gateway-macos/quota.html
+#    （注意不能走 http://127.0.0.1:7500/plugins/qoder-gateway-macos/quota.html ——
+#     宿主只服务 ui.slots 里声明过的 html，其余一律 403）
+# 3. 终端
+cd ~/.mini_code/plugins/qoder-gateway-macos && sh run.sh --quota
+```
+
+```text
+状态      正常
+剩余      1,944 / 2,610 credits
+已用      666（25.5%）
+附加包    100 / 100
+套餐      Teams
+重置      2026-11-22 14:19
+本机      112 次请求 · prompt 21,297,244 · cached 21,114,624（99.1% 命中）
+```
+
+`ui.slots[].height` 是写死的像素高度（当前 **117**，与 Windows 版同一个值：卡片本体 91px
++ 外边距）。装完如果徽标被裁，改大 `plugin.json` 里那个数字再重启插件即可。
+
 ## 已知边界
 
 * 只有 **arm64/amd64** 两份；Universal binary 也能做，只是体积翻倍没必要。

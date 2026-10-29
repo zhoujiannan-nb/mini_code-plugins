@@ -2,14 +2,23 @@
   "id": "qoder-gateway-macos",
   "name": "Qoder 网关（苹果版）",
   "nameEn": "Qoder Gateway (macOS)",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "author": "flycat666",
   "kind": "process",
-  "description": "把 Qoder 套餐暴露成本地 OpenAI 兼容 API（base_url http://127.0.0.1:32999/v1），macOS 专用。二进制随插件发：Apple Silicon(arm64) 与 Intel(amd64) 各一个 Mach-O，stripped 后经 zlib+base64 装进 qoder-gw-macos-<arch>.bin.json（宿主安装器不收可执行文件、单文件限 8MB），首次运行按本机 CPU 选对架构、解到 ~/Library/Application Support/QoderAPI/QoderAPI、按清单 sha256 校验并 chmod 755，拉下来就能用、不用 Xcode 不用编译。凭据一律不在仓库：PAT 读 ~/.qoder-api/pat.txt，客户端 key 读 ~/.qoder-api/key.txt（没有就随机生成）。",
+  "description": "把 Qoder 套餐暴露成本地 OpenAI 兼容 API（base_url http://127.0.0.1:32999/v1），macOS 专用，并在界面右上角显示 Qoder 积分额度。二进制随插件发：Apple Silicon(arm64) 与 Intel(amd64) 各一个 Mach-O，stripped 后经 zlib+base64 装进 qoder-gw-macos-<arch>.bin.json（宿主安装器不收可执行文件、单文件限 8MB），首次运行按本机 CPU 选对架构、解到 ~/Library/Application Support/QoderAPI/QoderAPI、按清单 sha256 校验并 chmod 755，拉下来就能用、不用 Xcode 不用编译。额度面板由启动器每 60 秒查询本机网关的 /qoder/usage 预渲染成静态片段（剩余/已用/进度条，明细见插件目录里的 quota.html）。凭据一律不在仓库：PAT 读 ~/.qoder-api/pat.txt，客户端 key 读 ~/.qoder-api/key.txt（没有就随机生成）。",
   "enabled": true,
   "requires": "macOS 11+（Apple Silicon 原生；Intel Mac 用 amd64 那份）+ Python 3.8+（macOS 自带的 python3 属于 Xcode 命令行工具，没装过就跑一次 `xcode-select --install`，或用 Homebrew 装）+ 自己的 Qoder PAT（放 ~/.qoder-api/pat.txt）。二进制已随插件附带，无需 Xcode 编译、无需 Go。",
-  "tags": ["macos", "openai", "gateway", "qoder"],
+  "tags": ["macos", "openai", "gateway", "qoder", "quota"],
   "license": "MIT",
+  "ui": {
+    "slots": [
+      {
+        "slot": "overlay",
+        "html": "quota-slot.html",
+        "height": 117
+      }
+    ]
+  },
   "process": {
     "command": "sh",
     "args": ["run.sh"],
@@ -24,6 +33,6 @@
       "tool": false,
       "endpoint": "http://127.0.0.1:32999/v1"
     },
-    "description": "Qoder → OpenAI 兼容网关（macOS 版），只监听 127.0.0.1。/health 免鉴权可查状态；/v1 需要 ~/.qoder-api/key.txt 里的 key。首次启动会把载荷解成 ~/Library/Application Support/QoderAPI/QoderAPI；想验证就 cd 到插件目录跑 sh run.sh --selftest。入口是 run.sh（它先找 Python 3.8+，找不到会告诉你 xcode-select --install）。把 expose.tool 改成 true 会给模型追加一个 plugin_proc__qoder_gateway_macos 控制工具（追加在核心工具之后，核心前缀缓存不动，但会改变当前会话的 tools 数组，建议空闲时再开）。"
+    "description": "Qoder → OpenAI 兼容网关（macOS 版），只监听 127.0.0.1。/health 免鉴权可查状态；/v1 需要 ~/.qoder-api/key.txt 里的 key。首次启动会把载荷解成 ~/Library/Application Support/QoderAPI/QoderAPI；想验证就 cd 到插件目录跑 sh run.sh --selftest。入口是 run.sh（它先找 Python 3.8+，找不到会告诉你 xcode-select --install）。界面右上角的额度徽标是启动器预渲染的静态片段（沙箱 iframe 不能跑脚本，所以刷新页面＝刷新额度；完整额度页用浏览器打开插件目录里的 quota.html，终端里看用 sh run.sh --quota）。把 expose.tool 改成 true 会给模型追加一个 plugin_proc__qoder_gateway_macos 控制工具（追加在核心工具之后，核心前缀缓存不动，但会改变当前会话的 tools 数组，建议空闲时再开）。"
   }
 }

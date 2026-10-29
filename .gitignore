@@ -3,3 +3,9 @@ __pycache__/
 .DS_Store
 *.log
 .preview-tmp/
+
+# 运行期生成的文件：启动器每次跑都会重写，不属于仓库内容。
+# quota-slot.html 是例外 —— 它是插件要发布的那份初始片段（声明在 ui.slots 里），
+# 所以不当成生成物忽略；quota.html 只是给人看的完整页，界面不引用它。
+process/qoder-gateway/quota.html
+process/qoder-gateway-macos/quota.html

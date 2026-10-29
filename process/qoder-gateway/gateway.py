@@ -298,8 +298,11 @@ def write_if_changed(path, text):
     return True
 
 
-def refresh_quota(addr=None, log_change=True):
-    """重算两个额度文件；返回 (是否更新, 状态文字)。"""
+def refresh_quota(addr=None, log_change=True, write_page=True):
+    """重算额度文件；返回 (是否更新, 状态文字)。
+
+    write_page=False 时只写徽标（测试用，避免在发布目录留下 quota.html）。
+    """
     try:
         import quota_render
     except ImportError:
@@ -310,7 +313,8 @@ def refresh_quota(addr=None, log_change=True):
     card = quota_render.render_card(usage, gateway_ok=ok)
     page = quota_render.render_page(usage, gateway_ok=ok)
     changed = write_if_changed(os.path.join(HERE, SLOT_FILE), card)
-    changed = write_if_changed(os.path.join(HERE, PAGE_FILE), page) or changed
+    if write_page:
+        changed = write_if_changed(os.path.join(HERE, PAGE_FILE), page) or changed
     state = quota_render.state_of(usage, ok)[0]
     if changed and log_change:
         acct = (usage or {}).get("account") or {}

@@ -38,6 +38,7 @@ import socket
 import struct
 import subprocess
 import sys
+import threading
 import time
 import urllib.error
 import urllib.request
@@ -48,6 +49,17 @@ CONF = os.path.join(HERE, "qoder-gw.json")
 DEFAULT_ADDR = "127.0.0.1:32999"
 BIN_NAME = "QoderAPI"
 ROSETTA_HINT = "arch -arm64 /usr/bin/python3"
+
+# ---- 额度面板 ----
+# 插件中心的 process 卡片只显示 state/pid/uptime/endpoint，插件没有接口往里塞数据。
+# 宿主唯一开放的展示位是 ui.slots（plugin.json 里声明），它是一个**无脚本、跨源隔离**
+# 的 sandbox iframe：内联样式与中文都能渲染，但 <meta refresh> 与同源 <img> 都不工作
+# （Chromium 151 实测，与 Windows 版同一份结论）。所以额度这样做：启动器定时问一次
+# /qoder/usage，把结果**预渲染**成静态 HTML 写进插件目录；宿主每次打开页面都重新拉
+# （Cache-Control: no-store），于是"打开/刷新页面 = 刷新额度"。
+SLOT_FILE = "quota-slot.html"     # 界面右上角那枚徽标（ui.slots: overlay）
+PAGE_FILE = "quota.html"          # 完整额度页（浏览器里直接打开这个文件）
+QUOTA_INTERVAL = 60               # 秒；启动器多久重算一次
 
 LC_CODE_SIGNATURE = 0x1D
 CPU_ARM64 = 0x0100000C
@@ -415,6 +427,121 @@ def start_gateway(binary, addr, region, extra):
     return subprocess.Popen(args, cwd=os.path.dirname(binary))
 
 
+# --------------------------------------------------------------------------
+# 额度面板：把 /qoder/usage 预渲染成静态 HTML
+# --------------------------------------------------------------------------
+
+def fetch_usage(addr=None, timeout=8.0):
+    """拿一次额度数据；拿不到返回 None（面板会显示"网关没运行/暂无数据"）。"""
+    addr = addr or current_addr
+    try:
+        with urllib.request.urlopen("http://%s/qoder/usage" % addr, timeout=timeout) as resp:
+            return json.loads(resp.read().decode())
+    except (urllib.error.URLError, OSError, ValueError):
+        return None
+
+
+def write_if_changed(path, text):
+    """内容没变就不碰文件（少一次磁盘写，也避免无意义地改 mtime）。"""
+    data = text.encode("utf-8")
+    try:
+        with open(path, "rb") as f:
+            if f.read() == data:
+                return False
+    except OSError:
+        pass
+    tmp = path + ".tmp"
+    with open(tmp, "wb") as f:
+        f.write(data)
+    os.replace(tmp, path)
+    return True
+
+
+def refresh_quota(addr=None, log_change=True, write_page=True):
+    """重算额度文件；返回 (是否更新, 状态文字)。
+
+    write_page=False 时只写徽标（测试用，避免在发布目录留下 quota.html）。
+    """
+    try:
+        import quota_render
+    except ImportError:
+        return False, "缺少 quota_render.py"
+    addr = addr or current_addr
+    usage = fetch_usage(addr)
+    ok = usage is not None
+    card = quota_render.render_card(usage, gateway_ok=ok)
+    page = quota_render.render_page(usage, gateway_ok=ok)
+    # 测试里只验徽标时用 refresh_quota(write_page=False)，免得在发布目录留下 quota.html
+    changed = write_if_changed(os.path.join(HERE, SLOT_FILE), card)
+    if write_page:
+        changed = write_if_changed(os.path.join(HERE, PAGE_FILE), page) or changed
+    state = quota_render.state_of(usage, ok)[0]
+    if changed and log_change:
+        acct = (usage or {}).get("account") or {}
+        uq = acct.get("user_quota") or {}
+        log("[quota] 已更新额度面板：%s（剩余 %s/%s）"
+            % (state, quota_render._num(uq.get("remaining")), quota_render._num(uq.get("total"))))
+    return changed, state
+
+
+def quota_loop(stop_event, addr=None):
+    """后台线程：刚起来先算一次（此时网关可能还没就绪，会退避重试），之后每 60 秒一次。"""
+    for delay in (1, 2, 3, 5, 8):
+        if stop_event.wait(delay):
+            return
+        if refresh_quota(addr):
+            break
+    while not stop_event.wait(QUOTA_INTERVAL):
+        try:
+            refresh_quota(addr)
+        except Exception as exc:  # noqa: BLE001 - 额度面板绝不能把网关带崩
+            log("[quota] 更新失败（忽略）：%r" % exc)
+
+
+def print_quota(addr=None):
+    """--quota：在终端里直接看一眼当前额度（不写文件）。"""
+    try:
+        import quota_render
+    except ImportError:
+        print("缺少 quota_render.py（它必须和 gateway.py 在同一个目录里）")
+        return 2
+    usage = fetch_usage(addr)
+    if usage is None:
+        print("拿不到额度：网关没在 %s 上跑，或者 PAT 失效。" % (addr or current_addr))
+        return 1
+    acct = usage.get("account") or {}
+    uq = acct.get("user_quota") or {}
+    proc = usage.get("process") or {}
+    state, _ = quota_render.state_of(usage)
+    print("状态      %s" % state)
+    print("剩余      %s / %s %s" % (quota_render._num(uq.get("remaining")),
+                                  quota_render._num(uq.get("total")),
+                                  uq.get("unit") or "credits"))
+    print("已用      %s（%.1f%%）" % (quota_render._num(uq.get("used")),
+                                    quota_render._pct(uq.get("used"), uq.get("total"))))
+    addon = acct.get("addon_quota") or {}
+    try:
+        if float(addon.get("total") or 0) > 0:
+            print("附加包    %s / %s" % (quota_render._num(addon.get("remaining")),
+                                        quota_render._num(addon.get("total"))))
+    except (TypeError, ValueError):
+        pass
+    if acct.get("plan") or acct.get("tag"):
+        print("套餐      %s" % (acct.get("tag") or acct.get("plan")))
+    if acct.get("next_reset_at_ms"):
+        try:
+            print("重置      %s" % time.strftime("%Y-%m-%d %H:%M",
+                                                time.localtime(float(acct["next_reset_at_ms"]) / 1000.0)))
+        except (TypeError, ValueError):
+            pass
+    ptok = proc.get("prompt_tokens") or 0
+    cached = proc.get("cached_tokens") or 0
+    print("本机      %s 次请求 · prompt %s · cached %s（%.1f%% 命中）"
+          % (quota_render._num(proc.get("requests")), quota_render._num(ptok),
+             quota_render._num(cached), (cached / ptok * 100.0) if ptok else 0.0))
+    return 0
+
+
 def selftest():
     """在自己机器上验一遍：载荷 → 解出 → 架构/签名 → 二进制能不能起来（--version）。
 
@@ -459,6 +586,8 @@ def main():
     global current_addr
     if "--selftest" in sys.argv:
         return selftest()
+    if "--quota" in sys.argv:
+        return print_quota(os.environ.get("QODER_GW_ADDR") or read_conf().get("addr") or DEFAULT_ADDR)
     if sys.platform != "darwin":
         return die(4,
                    "这个插件是给 macOS 用的（%s/%s）。" % (sys.platform, platform.machine()),
@@ -509,13 +638,22 @@ def main():
                    "或设 QODER_GW_ADDR。")
 
     proc = start_gateway(binary, addr, region, extra)
+
+    # 额度面板：后台线程盯着 /qoder/usage，把结果预渲染成插件目录里的两个静态文件。
+    quota_stop = threading.Event()
+    threading.Thread(target=quota_loop, args=(quota_stop, addr), daemon=True).start()
+
     code = supervise(proc)
+    quota_stop.set()
     if got_arch == "arm64" and not signed and code not in (0, None):
         # 最可能的原因：arm64 没有代码签名，内核把它杀了（killed: 9，无输出）。
         log("网关异常退出（code=%s），可能是缺少代码签名；补 ad-hoc 签名后重试一次" % code)
         if adhoc_sign(binary):
             proc = start_gateway(binary, addr, region, extra)
+            quota_stop2 = threading.Event()
+            threading.Thread(target=quota_loop, args=(quota_stop2, addr), daemon=True).start()
             code = supervise(proc)
+            quota_stop2.set()
     log("网关退出，code=%s" % code)
     return code or 0
 
