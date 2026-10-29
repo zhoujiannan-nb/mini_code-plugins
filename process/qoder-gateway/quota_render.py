@@ -12,48 +12,45 @@
   * <meta http-equiv="refresh"> **不触发**（无 allow-scripts 的沙箱里被禁用）
   * 同源 <img> / <link> **发不出请求**（'self' 在 opaque origin 下不匹配）
 
-结论：sandbox 里只能显示**静态**内容。所以额度面板由启动器定时把数据渲染成静态 HTML，
-落成插件目录里的 `quota.html`；宿主每次打开页面都重新拉（Cache-Control: no-store），
-因此"打开/刷新页面"就是刷新额度。想要更勤的更新，见 README 里的"手动刷新"。
+结论：sandbox 里只能显示**静态**内容，做不了"实时刷新"的浮层。所以最终方案不是往
+UI 上浮东西，而是把用量写成**插件自己卡片的描述**：`summary_line()` 返回一行摘要，
+启动器每 60 秒把它写进已安装那份 plugin.json 的 description 首行（宿主会实时重读）。
+`render_page()` 另外生成一份 quota.html，给人用浏览器看明细。
 
 本模块只做纯函数转换，不碰网络也不写盘，方便单测。
 """
 import html
 import time
 
-# 宿主给 slot 片段的 CSP 是 default-src 'none'，所以这里只用内联样式与文字。
-# 颜色取 mini_code 深色主题的观感：半透明深底 + 细边 + 白字。
-CSS = """
-*{box-sizing:border-box}
-html,body{margin:0;padding:0;background:transparent;
-  font:12px/1.35 -apple-system,"Segoe UI","Microsoft YaHei",system-ui,sans-serif;
-  color:#e8e8ea;-webkit-font-smoothing:antialiased}
-.wrap{display:flex;justify-content:flex-end;padding:10px 12px}
-.card{display:inline-flex;flex-direction:column;gap:5px;min-width:196px;
-  padding:8px 11px 9px;border-radius:12px;
-  background:rgba(22,22,26,.86);border:1px solid rgba(255,255,255,.13);
-  box-shadow:0 3px 14px rgba(0,0,0,.36)}
-.row{display:flex;align-items:center;gap:6px;justify-content:space-between}
-.title{display:flex;align-items:center;gap:6px;font-weight:600;letter-spacing:.2px}
-.dot{width:7px;height:7px;border-radius:50%;flex:0 0 auto;
-  background:#3ad07d;box-shadow:0 0 0 2px rgba(58,208,125,.16)}
-.dot.warn{background:#f0b429;box-shadow:0 0 0 2px rgba(240,180,41,.16)}
-.dot.bad{background:#ef5350;box-shadow:0 0 0 2px rgba(239,83,80,.16)}
-.dot.off{background:#8b8b93;box-shadow:0 0 0 2px rgba(139,139,147,.16)}
-.big{font-size:15px;font-weight:700;font-variant-numeric:tabular-nums}
-.unit{font-size:11px;font-weight:500;color:#9aa0a6;margin-left:2px}
-.sub{color:#9aa0a6;font-variant-numeric:tabular-nums}
-.bar{position:relative;height:4px;border-radius:999px;background:rgba(255,255,255,.12);
-  overflow:hidden}
-.bar>i{position:absolute;inset:0 auto 0 0;border-radius:999px;background:#3ad07d}
-.bar>i.warn{background:#f0b429}
-.bar>i.bad{background:#ef5350}
-.muted{color:#7c8288;font-size:11px}
-"""
 
 
 def _esc(x):
     return html.escape("" if x is None else str(x), quote=True)
+
+
+# 明细页自己的样式（这份页面是给人用浏览器打开的，不在 sandbox 里，所以随便写）。
+PAGE_CSS = """
+*{box-sizing:border-box}
+body{margin:0;padding:18px;background:#17171b;color:#e8e8ea;
+  font:13px/1.45 -apple-system,"Segoe UI","Microsoft YaHei",system-ui,sans-serif}
+h1{font-size:15px;margin:0 0 12px;display:flex;gap:8px;align-items:center}
+table{border-collapse:collapse;min-width:340px}
+th{text-align:left;font-weight:500;color:#9aa0a6;padding:5px 16px 5px 0;white-space:nowrap}
+td{padding:5px 0;font-variant-numeric:tabular-nums}
+.big{font-size:16px;font-weight:700}
+.unit{font-size:11px;color:#9aa0a6;margin-left:2px}
+.muted{color:#9aa0a6}
+.dot{width:7px;height:7px;border-radius:50%;background:#3ad07d;flex:0 0 auto}
+.dot.warn{background:#f0b429}
+.dot.bad{background:#ef5350}
+.dot.off{background:#8b8b93}
+.bar{display:block;width:220px;height:5px;border-radius:999px;
+  background:rgba(255,255,255,.12);overflow:hidden}
+.bar>i{display:block;height:100%;border-radius:999px;background:#3ad07d}
+.bar>i.warn{background:#f0b429}
+.bar>i.bad{background:#ef5350}
+.foot{margin-top:14px;color:#7c8288;font-size:11px;line-height:1.6}
+"""
 
 
 def _num(v):
@@ -97,54 +94,39 @@ def state_of(usage, gateway_ok=True):
     return "正常", ""
 
 
-def render_card(usage, gateway_ok=True, now=None, max_age_seconds=60):
-    """渲染右上角那枚额度徽标（slot=overlay）。
+def _plain(x, limit=40):
+    """把可能来自上游的字符串变成安全的单行纯文本（摘要会写进 plugin.json）。"""
+    s = "" if x is None else str(x)
+    s = s.replace("<", "").replace(">", "").replace("\n", " ").replace("\r", " ")
+    s = " ".join(s.split())
+    return s[:limit]
 
-    usage: GET /qoder/usage 的 JSON；None 表示拿不到。
-    now:   渲染时刻（time.time()），用于"多久以前"。
+
+def summary_line(usage, gateway_ok=True):
+    """给插件卡片用的**一行**用量摘要（写在已装 plugin.json 的 description 首行）。
+
+    插件中心那张卡只显示 manifest 的 description，没有别的动态字段；宿主会实时重读
+    plugin.json，所以启动器把这一行写到已安装的那份 description 里，就能"在插件自己
+    这里看到用量"，而不是往全局 UI 上浮一个遮罩。
     """
-    now = time.time() if now is None else now
-    text, cls = state_of(usage, gateway_ok)
+    text, _cls = state_of(usage, gateway_ok)
     if not usage:
-        body = ('<div class="wrap"><div class="card">'
-                '<div class="row"><span class="title"><span class="dot %s"></span>Qoder</span>'
-                '<span class="muted">%s</span></div>'
-                '<div class="muted">%s</div></div></div>'
-                % (_esc(cls), _esc(text),
-                   "先放 PAT 到 ~/.qoder-api/pat.txt" if gateway_ok else "在插件中心启动它"))
-        return ('<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">'
-                '<style>%s</style></head><body>%s</body></html>' % (CSS, body))
-
+        return ("额度：网关未运行" if not gateway_ok else "额度：暂无数据（检查 ~/.qoder-api/pat.txt）")
     acct = usage.get("account") or {}
     uq = acct.get("user_quota") or {}
+    unit = _plain(uq.get("unit") or "credits", 12)
+    pct = _pct(uq.get("used"), uq.get("total"))
+    line = "额度 %s / %s %s（已用 %s，%.0f%%）· %s" % (
+        _num(uq.get("remaining")), _num(uq.get("total")), unit, _num(uq.get("used")), pct, text)
     addon = acct.get("addon_quota") or {}
-    proc = usage.get("process") or {}
-
-    total = uq.get("total")
-    used = uq.get("used")
-    remain = uq.get("remaining")
-    unit = _esc(uq.get("unit") or "credits")
-    used_pct = _pct(used, total)
-
-    aria = "Qoder 剩余 %s %s，共 %s，已用 %s" % (_num(remain), unit, _num(total), _num(used))
-    # 徽标要塞进 iframe 的固定高度（plugin.json 的 ui.slots[].height），所以只放四行：
-    # 标题+状态 / 剩余额度 / 进度条 / 已用。附加包、token、缓存命中这些都在完整额度页里。
-    body = (
-        '<div class="wrap"><div class="card" role="status" aria-label="%s">'
-        '<div class="row"><span class="title"><span class="dot %s"></span>Qoder 额度</span>'
-        '<span class="muted">%s</span></div>'
-        '<div class="row"><span class="big">%s<span class="unit">%s</span></span>'
-        '<span class="sub">/ %s</span></div>'
-        '<div class="bar"><i class="%s" style="width:%.1f%%"></i></div>'
-        '<div class="row sub"><span>已用 %s</span><span>%.1f%%</span></div>'
-        '</div></div>'
-        % (_esc(aria), _esc(cls), _esc(text),
-           _num(remain), unit, _num(total),
-           _esc(cls), used_pct,
-           _num(used), used_pct)
-    )
-    return ('<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">'
-            '<style>%s</style></head><body>%s</body></html>' % (CSS, body))
+    try:
+        if float(addon.get("total") or 0) > 0 and addon.get("remaining"):
+            line += " · 附加包 %s/%s" % (_num(addon.get("remaining")), _num(addon.get("total")))
+    except (TypeError, ValueError):
+        pass
+    if acct.get("tag") or acct.get("plan"):
+        line += " · %s" % _plain(acct.get("tag") or acct.get("plan"), 24)
+    return line
 
 
 def render_page(usage, gateway_ok=True, now=None, detail=True):
@@ -207,21 +189,11 @@ def render_page(usage, gateway_ok=True, now=None, detail=True):
                   "拿不到额度数据：确认 ~/.qoder-api/pat.txt 里有有效的 PAT。"))
     stamp = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(now))
     return ("<!doctype html><html lang=\"zh-CN\"><head><meta charset=\"utf-8\">"
-            "<title>Qoder 额度</title><style>%s"
-            "body{background:#17171b;padding:18px;font-size:13px}"
-            "h1{font-size:15px;margin:0 0 10px;display:flex;gap:8px;align-items:center}"
-            "table{border-collapse:collapse;min-width:340px}"
-            "th{text-align:left;font-weight:500;color:#9aa0a6;padding:5px 14px 5px 0;white-space:nowrap}"
-            "td{padding:5px 0;font-variant-numeric:tabular-nums}"
-            ".bar{height:5px;border-radius:999px;background:rgba(255,255,255,.12);overflow:hidden}"
-            ".bar>i{display:block;height:100%%;border-radius:999px;background:#3ad07d}"
-            ".bar>i.warn{background:#f0b429}.bar>i.bad{background:#ef5350}"
-            ".foot{margin-top:14px;color:#7c8288;font-size:11px}"
-            "</style></head><body>"
+            "<title>Qoder 额度</title><style>%s</style></head><body>"
             "<h1><span class=\"dot %s\"></span>Qoder 额度<span class=\"muted\">%s</span></h1>"
             "<table>%s</table>"
             "<div class=\"foot\">数据来自 GET /qoder/usage（本机网关，只监听 127.0.0.1）。"
-            "渲染于 %s。<br>这个页面是启动器定时预渲染的静态文件，刷新页面＝重新取一次；"
-            "插件中心右上角那枚徽标同理。</div>"
+            "渲染于 %s。<br>这个页面是启动器定时预渲染的静态文件，重新打开＝重新取一次；"
+            "插件卡片描述第一行那串用量是同一份数据。</div>"
             "</body></html>"
-            % (CSS, _esc(cls), _esc(text), trs, _esc(stamp)))
+            % (PAGE_CSS, _esc(cls), _esc(text), trs, _esc(stamp)))

@@ -5,7 +5,7 @@
   "version": "1.1.0",
   "author": "flycat666",
   "kind": "process",
-  "description": "把 Qoder 套餐暴露成本地 OpenAI 兼容 API（base_url http://127.0.0.1:32999/v1），并在界面右上角显示 Qoder 积分额度。网关二进制随插件一起发（qoder-gw.bin.json：stripped exe 经 zlib+base64，3.8MB，宿主安装器不收 .exe 且单文件限 8MB），首次运行自动解到 %LOCALAPPDATA%\\Programs\\QoderAPI\\QoderAPI.exe 并按清单 sha256 校验，拉下来就能用、不用编译。额度面板由启动器每 60 秒查询本机网关的 /qoder/usage 预渲染成静态片段（缓存命中、剩余额度、套餐与重置时间）。凭据一律不在仓库里：PAT 读 ~/.qoder-api/pat.txt，客户端 key 读 ~/.qoder-api/key.txt（没有就随机生成）。",
+  "description": "把 Qoder 套餐暴露成本地 OpenAI 兼容 API（base_url http://127.0.0.1:32999/v1）。启动后这个卡片的描述首行会显示实时用量（剩余/总量、已用、套餐），每 60 秒刷新；明细看插件目录里的 quota.html。二进制随插件附带，首次运行自动解出并按 sha256 校验；凭据不落仓库（PAT / key 在 ~/.qoder-api/）。",
   "enabled": true,
   "requires": "Python 3.8+（启动器）+ 自己的 Qoder PAT（放 ~/.qoder-api/pat.txt）。二进制已随插件附带，无需 Go、无需编译。",
   "tags": [
@@ -14,15 +14,6 @@
     "qoder",
     "quota"
   ],
-  "ui": {
-    "slots": [
-      {
-        "slot": "overlay",
-        "html": "quota-slot.html",
-        "height": 117
-      }
-    ]
-  },
   "process": {
     "command": "python",
     "args": [
@@ -39,6 +30,6 @@
       "tool": false,
       "endpoint": "http://127.0.0.1:32999/v1"
     },
-    "description": "Qoder → OpenAI 兼容网关，只监听 127.0.0.1。/health 免鉴权可查状态；/v1 需要 ~/.qoder-api/key.txt 里的 key。界面右上角的额度徽标是启动器预渲染的静态片段（沙箱 iframe 不能跑脚本，所以刷新页面＝刷新额度；完整额度页用浏览器打开插件目录里的 quota.html，终端里看用 python gateway.py --quota）。把 expose.tool 改成 true 会给模型追加一个 plugin_proc__qoder_gateway 控制工具（追加在核心工具之后，核心前缀缓存不动，但会改变当前会话的 tools 数组，建议空闲时再开）。"
+    "description": "Qoder → OpenAI 兼容网关，只监听 127.0.0.1。/health 免鉴权可查状态；/v1 需要 ~/.qoder-api/key.txt 里的 key。用量写在插件卡片描述的第一行（启动器每 60 秒刷新），完整明细可以看插件目录里的 quota.html，终端里看用 python gateway.py --quota。把 expose.tool 改成 true 会给模型追加一个 plugin_proc__qoder_gateway 控制工具（追加在核心工具之后，核心前缀缓存不动，但会改变当前会话的 tools 数组，建议空闲时再开）。"
   }
 }

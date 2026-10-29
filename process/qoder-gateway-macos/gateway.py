@@ -18,7 +18,14 @@ Apple Silicon 上额外小心一件事：arm64 的 Mach-O 必须带代码签名�
     绝不写进 plugin.json、命令行或本仓库。
   * 不静默替换正在跑的实例：目标文件被占用且它就是健康的网关时，先用它跑起来，
     把更新留到下次重启，而不是让服务当场消失。
-  * 不在非 macOS 上硬跑：这本就是苹果版插件，认不出平台就直接说清楚该装哪个。
+   * 不在非 macOS 上硬跑：这本就是苹果版插件，认不出平台就直接说清楚该装哪个。
+
+用量显示：启动器每 60 秒问一次本机网关的 /qoder/usage，把一行摘要写进**已安装**
+那份 `plugin.json` 的 description 首行 —— 插件中心里这个插件的卡片就直接显示
+"额度 1,907 / 2,610 credits（已用 703，27%）· 正常 · 附加包 100/100 · Teams"。
+明细另外渲染成 `quota.html`（浏览器里直接打开）。
+终端里想直接看：`sh run.sh --quota`。
+
 
 二进制选择顺序：
   1. qoder-gw.json 的 "bin" 或环境变量 QODER_GW_BIN（用户显式指定，原样使用）
@@ -50,15 +57,14 @@ DEFAULT_ADDR = "127.0.0.1:32999"
 BIN_NAME = "QoderAPI"
 ROSETTA_HINT = "arch -arm64 /usr/bin/python3"
 
-# ---- 额度面板 ----
-# 插件中心的 process 卡片只显示 state/pid/uptime/endpoint，插件没有接口往里塞数据。
-# 宿主唯一开放的展示位是 ui.slots（plugin.json 里声明），它是一个**无脚本、跨源隔离**
-# 的 sandbox iframe：内联样式与中文都能渲染，但 <meta refresh> 与同源 <img> 都不工作
-# （Chromium 151 实测，与 Windows 版同一份结论）。所以额度这样做：启动器定时问一次
-# /qoder/usage，把结果**预渲染**成静态 HTML 写进插件目录；宿主每次打开页面都重新拉
-# （Cache-Control: no-store），于是"打开/刷新页面 = 刷新额度"。
-SLOT_FILE = "quota-slot.html"     # 界面右上角那枚徽标（ui.slots: overlay）
-PAGE_FILE = "quota.html"          # 完整额度页（浏览器里直接打开这个文件）
+# ---- 用量显示 ----
+# 插件卡片上唯一能动态变的字段就是 manifest 的 description（宿主会实时重读，
+# 与 Windows 版同一份结论）。所以启动器定时问一次本机网关的 /qoder/usage，把一行
+# 摘要写进**已安装那份** plugin.json 的 description 首行 —— 用户就在插件自己那张
+# 卡上看到用量，不占界面、不挡内容。
+# 全局 overlay（ui.slots）那套已废弃：宿主给的是无脚本、跨源隔离的 sandbox iframe，
+# <meta refresh> 不触发、同源资源拉不到，只能显示静态内容，还浮在界面右上角挡东西。
+PAGE_FILE = "quota.html"          # 完整明细页（浏览器里直接打开）
 QUOTA_INTERVAL = 60               # 秒；启动器多久重算一次
 
 LC_CODE_SIGNATURE = 0x1D
@@ -428,7 +434,7 @@ def start_gateway(binary, addr, region, extra):
 
 
 # --------------------------------------------------------------------------
-# 额度面板：把 /qoder/usage 预渲染成静态 HTML
+# 用量显示：写卡片摘要（主）+ 渲染明细页（辅）
 # --------------------------------------------------------------------------
 
 def fetch_usage(addr=None, timeout=8.0):
@@ -458,9 +464,11 @@ def write_if_changed(path, text):
 
 
 def refresh_quota(addr=None, log_change=True, write_page=True):
-    """重算额度文件；返回 (是否更新, 状态文字)。
+    """重算用量并落到该落的地方；返回 (是否有更新, 状态文字)。
 
-    write_page=False 时只写徽标（测试用，避免在发布目录留下 quota.html）。
+    主输出是**已装 plugin.json 的卡片摘要**（用户就在插件自己那张卡上看到用量）。
+    write_page=True 时另外渲染一份 quota.html 给人用浏览器看明细
+    （写不出来也不影响摘要，摘要才是主路径）。
     """
     try:
         import quota_render
@@ -469,19 +477,18 @@ def refresh_quota(addr=None, log_change=True, write_page=True):
     addr = addr or current_addr
     usage = fetch_usage(addr)
     ok = usage is not None
-    card = quota_render.render_card(usage, gateway_ok=ok)
-    page = quota_render.render_page(usage, gateway_ok=ok)
-    # 测试里只验徽标时用 refresh_quota(write_page=False)，免得在发布目录留下 quota.html
-    changed = write_if_changed(os.path.join(HERE, SLOT_FILE), card)
+    changed = update_manifest_summary(usage, ok)
     if write_page:
+        page = quota_render.render_page(usage, gateway_ok=ok)
         changed = write_if_changed(os.path.join(HERE, PAGE_FILE), page) or changed
     state = quota_render.state_of(usage, ok)[0]
     if changed and log_change:
         acct = (usage or {}).get("account") or {}
         uq = acct.get("user_quota") or {}
-        log("[quota] 已更新额度面板：%s（剩余 %s/%s）"
+        log("[quota] 已更新用量摘要：%s（剩余 %s/%s）"
             % (state, quota_render._num(uq.get("remaining")), quota_render._num(uq.get("total"))))
     return changed, state
+
 
 
 def quota_loop(stop_event, addr=None):
@@ -494,8 +501,53 @@ def quota_loop(stop_event, addr=None):
     while not stop_event.wait(QUOTA_INTERVAL):
         try:
             refresh_quota(addr)
-        except Exception as exc:  # noqa: BLE001 - 额度面板绝不能把网关带崩
+        except Exception as exc:  # noqa: BLE001 - 用量显示绝不能把网关带崩
             log("[quota] 更新失败（忽略）：%r" % exc)
+
+
+def update_manifest_summary(usage, gateway_ok=True):
+    """把用量摘要写进**已安装**那份 plugin.json 的 description 首行。
+
+    为什么这么做：插件中心那张卡只显示 manifest 的 description（宿主会实时重读），
+    没有别的动态字段；而全局 overlay 浮在界面右上角会挡内容、也丑。
+    仓库里那份 plugin.json 是模板，**不含**用量；只有本机安装副本会被写。
+    摘要行以固定前缀开头，重写时先把旧的第一行摘掉，避免越堆越长。
+
+    拿不到数据时**不覆盖**已有摘要：网关刚启动那几秒必然拿不到，覆盖了就只剩
+    "网关未运行"，反而把上一次的好数字冲掉了。
+    """
+    try:
+        import quota_render
+    except ImportError:
+        return False
+    if usage is None:
+        return False          # 没数据就不动，保留上一次的摘要
+    path = os.path.join(HERE, "plugin.json")
+    try:
+        with open(path, encoding="utf-8") as f:
+            man = json.load(f)
+    except (OSError, ValueError):
+        return False
+    line = quota_render.summary_line(usage, gateway_ok)
+    desc = (man.get("description") or "").strip()
+    # 去掉旧的摘要行（可能有多行残留）
+    body = "\n".join(
+        l for l in desc.splitlines()
+        if not l.strip().startswith(("额度 ", "额度：", "额度:", "摘要 "))
+    ).strip()
+    new_desc = line if not body else line + "\n" + body
+    if man.get("description") == new_desc:
+        return False
+    man["description"] = new_desc
+    tmp = path + ".tmp"
+    try:
+        with open(tmp, "w", encoding="utf-8", newline="\n") as f:
+            f.write(json.dumps(man, ensure_ascii=False, indent=2) + "\n")
+        os.replace(tmp, path)
+    except OSError as exc:
+        log("[quota] 写 plugin.json 失败（忽略）：%r" % exc)
+        return False
+    return True
 
 
 def print_quota(addr=None):
@@ -611,6 +663,13 @@ def main():
             % (payload_name, payload["sha256"][:16],
                os.path.getsize(payload_path(payload.get("arch") or arch)) / 1048576.0))
 
+    # 用量显示：线程必须在分支**之前**起。端口上已有网关时（启动器被杀过、网关成了
+    # 孤儿；或先手起过一次），下面走的是"只监督"那条路，永远不会执行到启动网关的代码，
+    # 用量就再也没人写 —— 而这条线程只依赖 /qoder/usage，端口上是哪个实例起的网关
+    # 都无所谓，所以提到前面来，两条分支共用。
+    quota_stop = threading.Event()
+    threading.Thread(target=quota_loop, args=(quota_stop, addr), daemon=True).start()
+
     if health(addr) is not None:
         if not watch_existing(addr):
             log("[takeover] 被看守的网关已退出，立即由本插件拉起新实例")
@@ -639,10 +698,6 @@ def main():
 
     proc = start_gateway(binary, addr, region, extra)
 
-    # 额度面板：后台线程盯着 /qoder/usage，把结果预渲染成插件目录里的两个静态文件。
-    quota_stop = threading.Event()
-    threading.Thread(target=quota_loop, args=(quota_stop, addr), daemon=True).start()
-
     code = supervise(proc)
     quota_stop.set()
     if got_arch == "arm64" and not signed and code not in (0, None):
@@ -650,10 +705,7 @@ def main():
         log("网关异常退出（code=%s），可能是缺少代码签名；补 ad-hoc 签名后重试一次" % code)
         if adhoc_sign(binary):
             proc = start_gateway(binary, addr, region, extra)
-            quota_stop2 = threading.Event()
-            threading.Thread(target=quota_loop, args=(quota_stop2, addr), daemon=True).start()
             code = supervise(proc)
-            quota_stop2.set()
     log("网关退出，code=%s" % code)
     return code or 0
 

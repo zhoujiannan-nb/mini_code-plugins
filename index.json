@@ -577,7 +577,7 @@
         "author": "flycat666",
         "version": "1.1.0",
         "license": "MIT",
-        "description": "把 Qoder 套餐暴露成本地 OpenAI 兼容 API（base_url http://127.0.0.1:32999/v1），并在界面右上角显示 Qoder 积分额度。网关二进制随插件一起发（qoder-gw.bin.json：stripped exe 经 zlib+base64，3.8MB，宿主安装器不收 .exe 且单文件限 8MB），首次运行自动解到 %LOCALAPPDATA%\\Programs\\QoderAPI\\QoderAPI.exe 并按清单 sha256 校验，拉下来就能用、不用编译。额度面板由启动器每 60 秒查询本机网关的 /qoder/usage 预渲染成静态片段（缓存命中、剩余额度、套餐与重置时间）。凭据一律不在仓库里：PAT 读 ~/.qoder-api/pat.txt，客户端 key 读 ~/.qoder-api/key.txt（没有就随机生成）。",
+        "description": "把 Qoder 套餐暴露成本地 OpenAI 兼容 API（base_url http://127.0.0.1:32999/v1）。启动后这个卡片的描述首行会显示实时用量（剩余/总量、已用、套餐），每 60 秒刷新；明细看插件目录里的 quota.html。二进制随插件附带，首次运行自动解出并按 sha256 校验；凭据不落仓库（PAT / key 在 ~/.qoder-api/）。",
         "path": "process/qoder-gateway",
         "category": "process",
         "tags": [
@@ -591,18 +591,18 @@
         "files": [
           {
             "path": "process/qoder-gateway/README.md",
-            "size": 7248,
-            "sha256": "7a7f84fdf568cc8513b01598fbfce9a24a7383469c4074e41c3ba185066fec69"
+            "size": 6939,
+            "sha256": "3d0059d02e0ff612887b756a88df96ce71ac826e24a9bcd2926a9e27a8e1f561"
           },
           {
             "path": "process/qoder-gateway/gateway.py",
-            "size": 16615,
-            "sha256": "16ed0b917940f11c51e759b1d1ba80ffee7a70e9a7679ddd9b9fc5cfc1d8c055"
+            "size": 18904,
+            "sha256": "77efea4234798caf327cc79fa9a4d6489e9315e55b962cc8360bb50a758778c9"
           },
           {
             "path": "process/qoder-gateway/plugin.json",
-            "size": 2274,
-            "sha256": "614da0898b556050bea20d4264ee6a7b94de615565b180ec98d787e8de0c7797"
+            "size": 1730,
+            "sha256": "91854f5ba9fbf549f87643cd42d0a61b3ac7daadb4341575b015e45816bf3e29"
           },
           {
             "path": "process/qoder-gateway/qoder-gw.bin.json",
@@ -615,14 +615,9 @@
             "sha256": "c851e324d82d75eddad5aef48c89922e9558e671dce136d09bf856d171fc00ee"
           },
           {
-            "path": "process/qoder-gateway/quota-slot.html",
-            "size": 2081,
-            "sha256": "605e1d9981d3ab5aa931e35e31539abbd5e7aacc083222e2f18998b6ed1fbc8f"
-          },
-          {
             "path": "process/qoder-gateway/quota_render.py",
-            "size": 11571,
-            "sha256": "438e30c25c4023d7c3a0bf4727969dcec752d6498603c95d3fce8360639ea88a"
+            "size": 9660,
+            "sha256": "62eb7f528e482f1bcc6c8da798bcf403385a4850b5b59214c7a82548fe32f573"
           }
         ]
       },
@@ -633,7 +628,7 @@
         "author": "flycat666",
         "version": "1.1.0",
         "license": "MIT",
-        "description": "把 Qoder 套餐暴露成本地 OpenAI 兼容 API（base_url http://127.0.0.1:32999/v1），macOS 专用，并在界面右上角显示 Qoder 积分额度。二进制随插件发：Apple Silicon(arm64) 与 Intel(amd64) 各一个 Mach-O，stripped 后经 zlib+base64 装进 qoder-gw-macos-<arch>.bin.json（宿主安装器不收可执行文件、单文件限 8MB），首次运行按本机 CPU 选对架构、解到 ~/Library/Application Support/QoderAPI/QoderAPI、按清单 sha256 校验并 chmod 755，拉下来就能用、不用 Xcode 不用编译。额度面板由启动器每 60 秒查询本机网关的 /qoder/usage 预渲染成静态片段（剩余/已用/进度条，明细见插件目录里的 quota.html）。凭据一律不在仓库：PAT 读 ~/.qoder-api/pat.txt，客户端 key 读 ~/.qoder-api/key.txt（没有就随机生成）。",
+        "description": "把 Qoder 套餐暴露成本地 OpenAI 兼容 API（base_url http://127.0.0.1:32999/v1），macOS 专用。启动后这个卡片的描述首行会显示实时用量（剩余/总量、已用、套餐），每 60 秒刷新；明细看插件目录里的 quota.html。arm64/amd64 二进制随插件附带，首次运行按本机 CPU 解出并校验；凭据不落仓库（PAT / key 在 ~/.qoder-api/）。",
         "path": "process/qoder-gateway-macos",
         "category": "process",
         "tags": [
@@ -648,18 +643,18 @@
         "files": [
           {
             "path": "process/qoder-gateway-macos/README.md",
-            "size": 11138,
-            "sha256": "5c3a986e0f3e0d57a2ac6fadd3408e43266752148a069bb5c5cb31a5adeaec77"
+            "size": 11283,
+            "sha256": "941a80fbd5579f4c543b4671211b0878864117349f23fd0b14400a03c48c513e"
           },
           {
             "path": "process/qoder-gateway-macos/gateway.py",
-            "size": 26934,
-            "sha256": "6f96e3a00c7e3debb4d3c3cb029bd98318db75bf9f10810978348cdd0e0f41e2"
+            "size": 29296,
+            "sha256": "17f3d12336e683a1e30fb1bd6346e237af47fbebd891175d19024cce451b2a0b"
           },
           {
             "path": "process/qoder-gateway-macos/plugin.json",
-            "size": 2827,
-            "sha256": "c751bec87054e673da5d051af0400651b37068786e54590a8d6cd78653b6da0e"
+            "size": 2202,
+            "sha256": "fb601e18cda1f143d1394ac8266100837410034506f8d10beff18f11e6b08317"
           },
           {
             "path": "process/qoder-gateway-macos/qoder-gw-macos-amd64.bin.json",
@@ -677,14 +672,9 @@
             "sha256": "753cc66290536d89256e33352037848c031675a0b0357a7d195b7ed0ebd29d48"
           },
           {
-            "path": "process/qoder-gateway-macos/quota-slot.html",
-            "size": 2081,
-            "sha256": "365dfa8e600bbafd9153c830acb1c853d557390baed902df5562996ec61fd24a"
-          },
-          {
             "path": "process/qoder-gateway-macos/quota_render.py",
-            "size": 11571,
-            "sha256": "438e30c25c4023d7c3a0bf4727969dcec752d6498603c95d3fce8360639ea88a"
+            "size": 9660,
+            "sha256": "62eb7f528e482f1bcc6c8da798bcf403385a4850b5b59214c7a82548fe32f573"
           },
           {
             "path": "process/qoder-gateway-macos/run.sh",

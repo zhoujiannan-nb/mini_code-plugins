@@ -42,34 +42,30 @@ cd qoderapi-gw
 python make_payload.py          # 自己 go build -s -w，写出 plugin/qoder-gw.bin.json
 ```
 
-## 额度面板（界面右上角的 Qoder 积分徽标）
+## 用量显示（就在插件自己这张卡片上）
 
-装上之后，界面右上角会有一枚额度徽标：剩余 / 总量、已用百分比、进度条、状态色
-（正常绿 / 偏低黄 / 告急红 / 未运行灰）。数据直接来自本机网关的 `GET /qoder/usage`
-（上游真实返回的 `user_quota`），不是估的。
+装好、启动之后，**这个插件的卡片描述第一行**会变成一行用量摘要：
 
-启动器每 60 秒问一次 `/qoder/usage`，把结果预渲染成 `quota-slot.html` 写进插件目录；
-宿主资源路由带 `Cache-Control: no-store`，每次打开/刷新页面都重新拉 ——
-所以「刷新页面 = 刷新额度」。
+```
+额度 1,907 / 2,610 credits（已用 703，27%）· 正常 · 附加包 100/100 · Teams
+```
 
-**为什么不实时刷新**：宿主把 `ui.slots` 的片段放进无脚本、跨源隔离的 `<iframe sandbox>`
-（裸 sandbox，连 `allow-scripts` 都不给）。Chromium 151 实测：内联样式与中文正常，
-但 `<meta http-equiv=refresh>` **不触发**、同源 `<img>` / `<link>` **连请求都发不出**
-（`'self'` 在 opaque origin 下不匹配）。片段里跑不了脚本、拉不到资源，只能显示静态内容。
+启动器每 60 秒问一次本机网关的 `/qoder/usage`（上游真实返回的 `user_quota`），
+把这一行写进**已安装那份** `plugin.json` 的 `description` 首行 —— 宿主会实时重读
+manifest，所以你在插件中心里看到的就是最新的数字，不用点进详情。
 
-三个地方能看额度：
+**仓库里的 `plugin.json` 是模板，不含用量**：只有本机安装副本会被写，别人的数字不会
+跑到仓库里，也不会因为"仓库里那份被改"而触发市场更新提示。拿不到数据时（网关刚重启的
+那几秒）**不覆盖**已有摘要，免得把上一次的好数字冲成"未运行"。
 
-1. 界面右上角徽标（`ui.slots = overlay`）
-2. 完整额度页：**用浏览器直接打开插件目录里的 `quota.html`**
-   （`C:\Users\<你>\.mini_code\plugins\qoder-gateway\quota.html`）
-   —— 套餐、重置时间、token、前缀缓存命中率都在这。
-   注意它**不能**通过 `http://127.0.0.1:7500/plugins/qoder-gateway/quota.html` 打开：
-   宿主只服务 `ui.slots` 里声明过的 html，其余一律 403（这是有意的安全设计）。
-3. 终端 `python gateway.py --quota`
+为什么不做成界面浮层：宿主确实提供了 `ui.slots`（能把 HTML 片段挂到界面右上角），但那是
+**无脚本、跨源隔离**的 sandbox iframe —— 实测内联样式与中文能渲染，可
+`<meta http-equiv=refresh>` 不触发、同源 `<img>/<link>` 连请求都发不出。它只能显示
+"某一刻"的静态内容，做不到实时；而且浮在所有东西上面会挡内容。所以最终选"写进卡片描述"：
+位置就在插件自己这里，数字还是活的。
 
-`ui.slots[].height` 是写死的像素高度，写小了徽标会被裁。当前 **117** 不是猜的：
-`fit_height.py` 用 Chromium 在 100% / 200% 缩放下各量一次 `.wrap` 的真实高度，
-取最大 + 6px 余量写回清单（卡片本体 91）。改了徽标样式就重新量一次。
+想看明细（套餐、重置时间、token、前缀缓存命中率）：用浏览器打开插件目录里的
+`quota.html`，或者终端里 `python gateway.py --quota`。
 
 ## 凭据一律不在仓库
 
