@@ -591,8 +591,8 @@
         "files": [
           {
             "path": "process/qoder-gateway/README.md",
-            "size": 6967,
-            "sha256": "04369016cff53d4bf7ac957dc0f9ad96aeffcb5d410ddfc862b5751d52840df0"
+            "size": 7248,
+            "sha256": "7a7f84fdf568cc8513b01598fbfce9a24a7383469c4074e41c3ba185066fec69"
           },
           {
             "path": "process/qoder-gateway/gateway.py",
@@ -601,8 +601,8 @@
           },
           {
             "path": "process/qoder-gateway/plugin.json",
-            "size": 2264,
-            "sha256": "dfc1d105514f63f080388d9d925badab36d50011f90a639dfd25de36c7ed8a85"
+            "size": 2274,
+            "sha256": "614da0898b556050bea20d4264ee6a7b94de615565b180ec98d787e8de0c7797"
           },
           {
             "path": "process/qoder-gateway/qoder-gw.bin.json",

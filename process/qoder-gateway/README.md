@@ -60,8 +60,11 @@ python make_payload.py          # 自己 go build -s -w，写出 plugin/qoder-gw
 三个地方能看额度：
 
 1. 界面右上角徽标（`ui.slots = overlay`）
-2. 完整额度页 `http://127.0.0.1:7500/plugins/qoder-gateway/quota.html`
-   （套餐、重置时间、token、前缀缓存命中率都在这）
+2. 完整额度页：**用浏览器直接打开插件目录里的 `quota.html`**
+   （`C:\Users\<你>\.mini_code\plugins\qoder-gateway\quota.html`）
+   —— 套餐、重置时间、token、前缀缓存命中率都在这。
+   注意它**不能**通过 `http://127.0.0.1:7500/plugins/qoder-gateway/quota.html` 打开：
+   宿主只服务 `ui.slots` 里声明过的 html，其余一律 403（这是有意的安全设计）。
 3. 终端 `python gateway.py --quota`
 
 `ui.slots[].height` 是写死的像素高度，写小了徽标会被裁。当前 **117** 不是猜的：

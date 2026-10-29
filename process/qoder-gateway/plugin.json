@@ -39,6 +39,6 @@
       "tool": false,
       "endpoint": "http://127.0.0.1:32999/v1"
     },
-    "description": "Qoder → OpenAI 兼容网关，只监听 127.0.0.1。/health 免鉴权可查状态；/v1 需要 ~/.qoder-api/key.txt 里的 key。界面右上角的额度徽标是启动器预渲染的静态片段（沙箱 iframe 不能跑脚本，所以刷新页面＝刷新额度；完整额度页见 /plugins/qoder-gateway/quota.html，终端里看用 python gateway.py --quota）。把 expose.tool 改成 true 会给模型追加一个 plugin_proc__qoder_gateway 控制工具（追加在核心工具之后，核心前缀缓存不动，但会改变当前会话的 tools 数组，建议空闲时再开）。"
+    "description": "Qoder → OpenAI 兼容网关，只监听 127.0.0.1。/health 免鉴权可查状态；/v1 需要 ~/.qoder-api/key.txt 里的 key。界面右上角的额度徽标是启动器预渲染的静态片段（沙箱 iframe 不能跑脚本，所以刷新页面＝刷新额度；完整额度页用浏览器打开插件目录里的 quota.html，终端里看用 python gateway.py --quota）。把 expose.tool 改成 true 会给模型追加一个 plugin_proc__qoder_gateway 控制工具（追加在核心工具之后，核心前缀缓存不动，但会改变当前会话的 tools 数组，建议空闲时再开）。"
   }
 }
