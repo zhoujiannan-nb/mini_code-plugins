@@ -57,6 +57,11 @@ DEFAULT_ADDR = "127.0.0.1:32999"
 BIN_NAME = "QoderAPI"
 ROSETTA_HINT = "arch -arm64 /usr/bin/python3"
 
+# 别在插件目录里留 __pycache__：宿主的插件安装器要求目录扁平（见到子目录直接报错），
+# 而 `import quota_render` 默认会在 HERE 下建 __pycache__ —— 那会挡住今后从插件中心
+# 升级。这里只关掉字节码落盘（import 照常工作）。
+sys.dont_write_bytecode = True
+
 # ---- 用量显示 ----
 # 插件卡片上唯一能动态变的字段就是 manifest 的 description（宿主会实时重读，
 # 与 Windows 版同一份结论）。所以启动器定时问一次本机网关的 /qoder/usage，把一行
