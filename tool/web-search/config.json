@@ -1,3 +1,12 @@
 {
+  "chain": "so360,bing-cn,sogou,baidu,ddg",
+  "browser_chain": "bing,google",
+  "gate": 0.5,
+  "mode": "auto",
+  "proxy": "auto",
+  "deadline_s": 25,
+  "max_results": 10,
+  "searxng_url": "",
+  "log": true,
   "web_search_home": "D:\\project_ai\\web_search"
 }

@@ -690,38 +690,58 @@
         "name": "网页搜索 / 正文读取",
         "nameEn": "",
         "author": "flycat666",
-        "version": "1.0.0",
+        "version": "2.0.0",
         "license": "MIT",
-        "description": "给模型追加 web_search / web_read / web_search_multi 三个工具：用真实（无头）浏览器搜五个搜索引擎（bing/baidu/google/duckduckgo/zhihu），并把网页正文抽成 markdown。依赖本机的 web_search 项目 + playwright + chromium，见同目录 README.md。",
+        "description": "给模型追加 web_search / web_read / web_search_multi 三个工具。v2 默认走纯 HTTP 引擎链（360 → 必应 → 搜狗 → 百度 → DuckDuckGo），带相关性闸门和跳转链还原，单次 0.3-1.5s；整条链都失败才懒启动无头浏览器兜底。正文读取同样是 HTTP 优先（trafilatura），只有 JS 页 / 403 才开浏览器。插件自包含，不再依赖外部 web_search 项目。",
         "path": "tool/web-search",
         "category": "tool",
-        "tags": [],
+        "tags": [
+          "search",
+          "web",
+          "http",
+          "read"
+        ],
         "tools": [
           "web_search",
           "web_read",
           "web_search_multi"
         ],
-        "requires": "",
+        "requires": "Python 3.10+。纯 HTTP 路径无第三方依赖；浏览器兜底要 playwright + chromium（缺了自动跳过）；正文抽取可选装 trafilatura。",
         "files": [
           {
             "path": "tool/web-search/README.md",
-            "size": 4927,
-            "sha256": "24d04e771c95d06d298d1c4fa08da22739f6d26b94729bb225933addd9b09fb6"
+            "size": 6421,
+            "sha256": "25bf96d1862def477add5ae088a0f45bffb1ed2cac5477cf7a1bc27ff53c2be2"
           },
           {
             "path": "tool/web-search/adapter.py",
-            "size": 10333,
-            "sha256": "81cbb23be78fb65c326ac3c2f616861538a932ffb539a9a64105a8f0238000a3"
+            "size": 23232,
+            "sha256": "dc64ba3072616f0efa43e14010ed4d4bb4fc3f0fa25d7f2f4ec6a9219d672b82"
+          },
+          {
+            "path": "tool/web-search/bench.py",
+            "size": 6884,
+            "sha256": "269b3942a91b221431ff5157b7ff35d492bf0decb288922c3528ca5d515297c3"
           },
           {
             "path": "tool/web-search/config.json",
-            "size": 54,
-            "sha256": "adf0841c98c0cec494a11493b9cefb5e6420b1063bf79d3fa2ed82884521be79"
+            "size": 261,
+            "sha256": "87fe84adf121912e804befa818ecc81f1d4b061097d20be7cf56358f2ab2e295"
+          },
+          {
+            "path": "tool/web-search/fastpath.py",
+            "size": 41305,
+            "sha256": "defe98b68affd20f7a8c33e94b0822e339abfadf5e7e559ff4c166c7e586e909"
+          },
+          {
+            "path": "tool/web-search/memory.md",
+            "size": 1655,
+            "sha256": "ae2b21b5b8fc16618dee3862f3d3fa0d9301394dc6dabcfc3872ba97736d140a"
           },
           {
             "path": "tool/web-search/plugin.json",
-            "size": 6458,
-            "sha256": "e744f6e20a82f77c08b70c05d676e42ea6ef51629dcdada6b4d8910989b999ac"
+            "size": 9266,
+            "sha256": "242c1c3ed55b60e1077e509a1429f8cb987201dcde73dc24ee596485441843fe"
           }
         ]
       }

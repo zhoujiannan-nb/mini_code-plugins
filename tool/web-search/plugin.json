@@ -1,14 +1,17 @@
 {
   "id": "web-search",
   "name": "网页搜索 / 正文读取",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "author": "flycat666",
-  "description": "给模型追加 web_search / web_read / web_search_multi 三个工具：用真实（无头）浏览器搜五个搜索引擎（bing/baidu/google/duckduckgo/zhihu），并把网页正文抽成 markdown。依赖本机的 web_search 项目 + playwright + chromium，见同目录 README.md。",
+  "description": "给模型追加 web_search / web_read / web_search_multi 三个工具。v2 默认走纯 HTTP 引擎链（360 → 必应 → 搜狗 → 百度 → DuckDuckGo），带相关性闸门和跳转链还原，单次 0.3-1.5s；整条链都失败才懒启动无头浏览器兜底。正文读取同样是 HTTP 优先（trafilatura），只有 JS 页 / 403 才开浏览器。插件自包含，不再依赖外部 web_search 项目。",
   "kind": "tool",
+  "tags": ["search", "web", "http", "read"],
+  "requires": "Python 3.10+。纯 HTTP 路径无第三方依赖；浏览器兜底要 playwright + chromium（缺了自动跳过）；正文抽取可选装 trafilatura。",
+  "memory": "memory.md",
   "tools": [
     {
       "name": "web_search",
-      "description": "Search the web with a real (headless) browser and get JSON back: position/title/link/snippet/source per result, plus an optional 'warning' field when a search engine looks degraded. Use it whenever the answer depends on current facts — library versions, release dates, prices, news, API docs — instead of answering from memory. Default engine is bing (most reliable). After searching, open the promising links with web_read rather than guessing from the snippet.",
+      "description": "Search the web and get JSON back: position/title/link/snippet/source, plus 'relevance' (0-1) and a 'degraded' flag. Default path is plain HTTP over an engine chain (360 -> cn.bing -> sogou -> baidu -> DuckDuckGo) at ~0.3-1.5s per call; a headless browser only kicks in if the whole chain fails, and it resolves wrapped redirect links into real URLs. Leave the parameters alone for a normal search — the chain already falls back. If 'degraded' is true (or relevance < 0.5, or there is a 'warning'), those results are junk from an anti-bot decoy or a flaky index: re-search with different wording or another engine/chain and never quote them as an answer. After searching, open the most promising link with web_read instead of trusting the snippet.",
       "parameters": {
         "type": "object",
         "properties": {
@@ -16,51 +19,64 @@
             "type": "string",
             "description": "What to search for. Keep it short — it is typed into a search box, not into a prompt."
           },
-          "engine": {
-            "type": "string",
-            "enum": ["bing", "baidu", "google", "duckduckgo", "zhihu"],
-            "description": "Search engine to use. bing = default and most reliable; baidu/zhihu for Chinese-language content; google/duckduckgo for English."
-          },
           "max": {
             "type": "integer",
             "minimum": 1,
             "maximum": 20,
             "description": "Maximum number of results to return (default 10)."
           },
-          "pages": {
-            "type": "integer",
-            "minimum": 1,
-            "maximum": 3,
-            "description": "How many result pages to scrape (default 1). Each extra page costs a few seconds."
+          "chain": {
+            "type": "string",
+            "description": "Comma separated HTTP engine chain to try in order, default 'so360,bing-cn,sogou,baidu,ddg'. Use it when one engine is rate-limiting you, e.g. 'so360,sogou' for Chinese content."
+          },
+          "engine": {
+            "type": "string",
+            "enum": ["so360", "bing", "sogou", "baidu", "ddg", "google"],
+            "description": "Pin a single engine and skip the fallback chain (google goes through the headless browser and is slower). Omit it to let the chain decide — that is the recommended default."
           },
           "domain": {
             "type": "string",
-            "description": "Keep only results whose link contains this domain, e.g. 'docs.python.org'. Useful for official docs."
+            "description": "Keep only results whose link contains this domain, e.g. 'docs.python.org'. The chain keeps trying until some engine has a result on that domain. Useful for official docs; don't write 'site:' in the query."
           },
-          "fallback": {
+          "gate": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 0.95,
+            "description": "Relevance gate: fraction of results that must actually contain the query words, otherwise the engine counts as degraded and we move on. Default 0.5. Raise it (0.7-0.9) for exact-name / error-string lookups."
+          },
+          "mode": {
             "type": "string",
-            "description": "Engine(s) to retry when the first one returns nothing: comma separated ('bing,google') or 'auto' to try the rest in default order."
+            "enum": ["auto", "fast", "browser"],
+            "description": "auto = HTTP chain then browser fallback (default); fast = HTTP only, never start a browser; browser = go straight to the browser engines."
           },
-          "timeout_ms": {
+          "deadline_s": {
             "type": "integer",
-            "minimum": 3000,
-            "maximum": 60000,
-            "description": "Per-page navigation timeout in milliseconds (default 15000)."
+            "minimum": 5,
+            "maximum": 120,
+            "description": "Whole-call time budget in seconds (default 25). The chain stops and returns what it has when the budget is spent."
+          },
+          "proxy": {
+            "type": "string",
+            "description": "auto = detect (env vars, Windows system proxy, common local ports 7897/7890/10809/1080) — the default; off = force direct connection; or an explicit 'http://127.0.0.1:7890'."
           },
           "headless": {
             "type": "boolean",
-            "description": "Run the browser without a window. Default true — leave it alone unless you are watching the screen."
+            "description": "Only affects the browser fallback. Default true — leave it alone unless you are watching the screen."
+          },
+          "debug": {
+            "type": "boolean",
+            "description": "Include the resolved chain, gate, proxy and the request URL in the output (for diagnosing a bad engine)."
           }
         },
         "required": ["query"]
       },
       "command": "python",
       "args": ["adapter.py", "search"],
-      "timeout_seconds": 150
+      "timeout_seconds": 90
     },
     {
       "name": "web_read",
-      "description": "Open one URL in a real (headless) browser and return its main article text as markdown (navigation, ads and sidebars stripped). Use it right after web_search to actually read a promising result — snippets are not enough for facts, code or version numbers. Long pages are truncated to max_chars, so raise it only when you need a later part of the page.",
+      "description": "Open one URL and return its main article text as markdown (navigation, ads and sidebars stripped). HTTP fetch + trafilatura first (~0.7s); a headless browser is used only when the page is JS-rendered or answers 403/412, so a blocked page fails in about 10s instead of hanging. Output is the text followed by one HTML comment line 'url | title | N chars | backend | ms' — if it carries a WARNING or only a few dozen chars, the page is behind a login/anti-bot wall: try another source instead of reporting an empty page. Long pages are cut at max_chars; the host also truncates tool output over 32KB (Chinese is ~3 bytes per char, so keep it under ~10000).",
       "parameters": {
         "type": "object",
         "properties": {
@@ -77,15 +93,20 @@
             "type": "integer",
             "minimum": 500,
             "maximum": 12000,
-            "description": "Truncate the extracted text to this many characters (default 8000). The host cuts any tool result over 32KB, and Chinese text is ~3 bytes per character, so keep it under ~10000."
+            "description": "Truncate the extracted text to this many characters (default 8000). Raise it only when the output says the page was truncated."
           },
           "wait_selector": {
             "type": "string",
-            "description": "CSS selector to wait for before extracting — needed for JS-rendered (SPA) pages, e.g. 'article' or '.markdown-body'."
+            "description": "CSS selector to wait for before extracting — only useful with the browser (SPA pages), e.g. 'article' or '.markdown-body'."
           },
           "scroll": {
             "type": "boolean",
-            "description": "Scroll to the bottom first to trigger lazy-loaded content (default false)."
+            "description": "Scroll to the bottom first to trigger lazy-loaded content (browser path only, default false)."
+          },
+          "mode": {
+            "type": "string",
+            "enum": ["auto", "fast"],
+            "description": "auto = fall back to the browser when HTTP gets nothing (default); fast = HTTP only, fail fast."
           },
           "timeout_ms": {
             "type": "integer",
@@ -93,20 +114,24 @@
             "maximum": 60000,
             "description": "Navigation timeout in milliseconds (default 15000)."
           },
-          "headless": {
+          "proxy": {
+            "type": "string",
+            "description": "auto (default) / off / explicit 'http://host:port'."
+          },
+          "json": {
             "type": "boolean",
-            "description": "Default true (no browser window)."
+            "description": "Return a JSON envelope (url/title/chars/backend/text) instead of markdown + comment line. Default false."
           }
         },
         "required": ["url"]
       },
       "command": "python",
       "args": ["adapter.py", "read"],
-      "timeout_seconds": 150
+      "timeout_seconds": 90
     },
     {
       "name": "web_search_multi",
-      "description": "Search several keywords in one browser session (batch web_search; ~2s between queries). Prefer this over calling web_search N times when you have a fixed list of things to check, since it starts the browser once.",
+      "description": "Search several keywords in one process (default HTTP chain, ~1-2s per keyword) — prefer this over calling web_search N times when you have a fixed list of things to check, since the engine chain, proxy detection and a possible browser are all set up once.",
       "parameters": {
         "type": "object",
         "properties": {
@@ -117,10 +142,14 @@
             "maxItems": 8,
             "description": "Keywords to search, one per entry (max 8)."
           },
+          "chain": {
+            "type": "string",
+            "description": "Engine chain for all queries, default 'so360,bing-cn,sogou,baidu,ddg'."
+          },
           "engine": {
             "type": "string",
-            "enum": ["bing", "baidu", "google", "duckduckgo", "zhihu"],
-            "description": "Search engine for all queries. Default bing."
+            "enum": ["so360", "bing", "sogou", "baidu", "ddg", "google"],
+            "description": "Pin one engine for all queries instead of using the chain."
           },
           "max": {
             "type": "integer",
@@ -128,15 +157,17 @@
             "maximum": 20,
             "description": "Results per keyword (default 5)."
           },
-          "timeout_ms": {
+          "gap_ms": {
             "type": "integer",
-            "minimum": 3000,
-            "maximum": 60000,
-            "description": "Per-page navigation timeout in milliseconds (default 15000)."
+            "minimum": 0,
+            "maximum": 10000,
+            "description": "Pause between keywords in milliseconds (default 1200). Raise it if the engine starts rate-limiting you."
           },
-          "headless": {
-            "type": "boolean",
-            "description": "Default true (no browser window)."
+          "deadline_s": {
+            "type": "integer",
+            "minimum": 5,
+            "maximum": 120,
+            "description": "Time budget per keyword (default 25)."
           }
         },
         "required": ["queries"]
