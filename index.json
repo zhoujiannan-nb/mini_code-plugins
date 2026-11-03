@@ -730,8 +730,8 @@
           },
           {
             "path": "tool/web-search/fastpath.py",
-            "size": 41305,
-            "sha256": "defe98b68affd20f7a8c33e94b0822e339abfadf5e7e559ff4c166c7e586e909"
+            "size": 41612,
+            "sha256": "da81df7c06a6e697e4d66237d0688edbd30dd3a6cc771b7835e953069628f95c"
           },
           {
             "path": "tool/web-search/memory.md",

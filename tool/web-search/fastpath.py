@@ -175,13 +175,19 @@ def unwrap_link(href, base=""):
 
 def _ddg(html, query):
     out = []
-    for block in re.findall(r'(?is)<div class="result[^"]*[\s\S]{0,4000}?(?=<div class="result|\Z)')[:40]:
+    for block in re.findall(r'(?is)<div class="result[^"]*[\s\S]{0,4000}?(?=<div class="result|\Z)',
+                            html)[:40]:
         m = re.search(r'(?is)<a[^>]*class="result__a"[^>]*href="([^"]+)"[^>]*>(.*?)</a>', block)
         if not m:
             continue
+        link = m.group(1)
+        if "uddg=" in link:                      # html 端点给的是 /l/?uddg=<urlencode> 跳转链
+            link = urllib.parse.unquote(link.split("uddg=")[-1].split("&")[0])
+        elif link.startswith("//"):
+            link = "https:" + link
         sm = re.search(r'(?is)class="result__snippet"[^>]*>(.*?)</a>', block)
         um = re.search(r'(?is)result__url[^>]*>(.*?)</', block)
-        out.append({"title": strip_tags(m.group(2)), "link": m.group(1),
+        out.append({"title": strip_tags(m.group(2)), "link": link,
                     "snippet": strip_tags(sm.group(1)) if sm else "",
                     "source": strip_tags(um.group(1)) if um else ""})
     return out
